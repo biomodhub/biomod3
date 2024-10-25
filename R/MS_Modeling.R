@@ -163,6 +163,7 @@ MS_Modeling <- function(ms.format,
   dir.name <- file.path(ms.format@dir.name, ms.format@ms.project)
   
   workflow <- foreach(sp = ms.format@sp.name) %do% {
+    cat("\n\t Modeling of", sp)
     # 1. Récupération ms.format 
     sfd <- get(load(file.path(nameFolder, paste0(sp,".sfd"))))
     
@@ -202,7 +203,7 @@ MS_Modeling <- function(ms.format,
   }
   
   .bm_cat("Done")
-  return(models.out)
+  return(MSmodels)
 }
 
 

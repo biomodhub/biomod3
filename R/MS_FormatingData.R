@@ -118,24 +118,25 @@ MS_FormatingData <- function(ms.project.name,
   new.formated.data <- foreach(sp = resp.name) %do% {
 
     parameters <- params[[sp]]
-
-    output <- capture.output(formated.data <- BIOMOD_FormatingData(resp.var = resp.var[,sp],
-                                          expl.var = expl.var,
-                                          resp.xy = resp.xy,
-                                          resp.name = sp,
-                                          eval.resp.var = eval.resp.var,
-                                          eval.expl.var = eval.exp.var,
-                                          eval.resp.xy = eval.resp.xy,
-                                          PA.nb.rep = parameters$PA.nb.rep,
-                                          PA.nb.absences = parameters$PA.nb.absences,
-                                          PA.strategy = parameters$PA.strategy,
-                                          PA.dist.min = parameters$PA.dist.min,
-                                          PA.dist.max = parameters$PA.dist.max,
-                                          PA.sre.quant = parameters$PA.sre.quant,
-                                          PA.fact.aggr = parameters$PA.fact.aggr,
-                                          PA.user.table = parameters$PA.user.table,
-                                          na.rm = T,
-                                          filter.raster = filter.raster))
+    
+    output <- capture.output(formated.data <- BIOMOD_FormatingData(dir.name = file.path(dir.name, ms.project.name),
+                                                                   resp.var = resp.var[,sp],
+                                                                   expl.var = expl.var,
+                                                                   resp.xy = resp.xy,
+                                                                   resp.name = sp,
+                                                                   eval.resp.var = eval.resp.var,
+                                                                   eval.expl.var = eval.exp.var,
+                                                                   eval.resp.xy = eval.resp.xy,
+                                                                   PA.nb.rep = parameters$PA.nb.rep,
+                                                                   PA.nb.absences = parameters$PA.nb.absences,
+                                                                   PA.strategy = parameters$PA.strategy,
+                                                                   PA.dist.min = parameters$PA.dist.min,
+                                                                   PA.dist.max = parameters$PA.dist.max,
+                                                                   PA.sre.quant = parameters$PA.sre.quant,
+                                                                   PA.fact.aggr = parameters$PA.fact.aggr,
+                                                                   PA.user.table = parameters$PA.user.table,
+                                                                   na.rm = T,
+                                                                   filter.raster = filter.raster))
     save(formated.data, file = file.path(nameFolder, paste0(sp,".sfd")), compress = TRUE)
     return(formated.data)
   }
@@ -150,6 +151,7 @@ MS_FormatingData <- function(ms.project.name,
     single.formated.data <- single.formated.data[-1]
     
     cat("\n\t Data formating of", sfd@sp.name)
+    sfd@dir.name = file.path(dir.name, ms.project.name)
     save(sfd, file = file.path(nameFolder, paste0(sfd@sp.name,".sfd")), compress = TRUE)
     
     PA.strategy <- ifelse(.hasSlot(sfd, "PA.strategy"), sfd@PA.strategy, "real")
@@ -183,6 +185,7 @@ MS_FormatingData <- function(ms.project.name,
   if (!is.null(single.formated.data) && length(single.formated.data) != 0){
     for (i in 1:length(single.formated.data)){
       sfd <- single.formated.data[[i]]
+      sfd@dir.name = file.path(dir.name, ms.project.name)
       MSFD <- MS_AddData(MSFD, sfd)
       save(sfd, file = file.path(nameFolder, paste0(sfd@sp.name,".sfd")), compress = TRUE)
     }
