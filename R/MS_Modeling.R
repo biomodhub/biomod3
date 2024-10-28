@@ -1,6 +1,6 @@
 # MS_Modeling ---------------------------------------------------------
 ##' @name MS_Modeling
-##' @author Wilfried Thuiller, Damien Georges, Robin Engler
+##' @author Helene Blancheteau
 ##' 
 ##' @title Run a range of species distribution models
 ##' 

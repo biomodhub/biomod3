@@ -22,6 +22,12 @@ setClass("MS.models.out",
                    scale.models = TRUE),
          validity = function(object){ return(TRUE) } )
 
+setClass("BIOMOD.stored.ms.models.out",
+         contains = "BIOMOD.stored.data",
+         representation(val = 'MS.models.out'),
+         prototype(val = NULL),
+         validity = function(object) { return(TRUE) })
+
 
 ## show.MS.models.out ---------------------------------------------------
 ##' 
@@ -62,19 +68,25 @@ setMethod("get_options", "MS.models.out", function(obj, sp) {
 setMethod("get_calib_lines", "MS.models.out",
           function(obj, as.data.frame = FALSE, PA = NULL, run = NULL)
           {
-            out <- load_stored_object(obj@calib.lines)
-            
-            if (!is.null(out) && as.data.frame == TRUE) {
-              tmp <- melt(out, varnames = c("points", "PA_run"))
-              tmp$PA = strsplit(sub("^_", "", tmp$PA_run), "_")[[1]][1]
-              tmp$run = strsplit(sub("^_", "", tmp$PA_run), "_")[[1]][2]
-              out <- tmp[, c("PA", "run", "points", "value")]
-              colnames(out)[4] = "calib.lines"
+            out_total <- foreach (sp = obj@sp.name, .combine = rbind) %do% {
+              nameFolder <- file.path(obj@dir.name, sp)
+              model <- get(load(file.path(nameFolder, paste0(sp,".", obj@modeling.id, ".models.out"))))
+              out <- load_stored_object(model@calib.lines)
               
-              keep_lines <- .filter_outputs.df(out, subset.list = list(PA = PA, run = run))
-              out <- out[keep_lines, ]
+              if (!is.null(out) && as.data.frame == TRUE) {
+                tmp <- melt(out, varnames = c("points", "PA_run"))
+                tmp$PA = strsplit(sub("^_", "", tmp$PA_run), "_")[[1]][1]
+                tmp$run = strsplit(sub("^_", "", tmp$PA_run), "_")[[1]][2]
+                out <- tmp[, c("PA", "run", "points", "value")]
+                colnames(out)[4] = "calib.lines"
+                
+                keep_lines <- .filter_outputs.df(out, subset.list = list(PA = PA, run = run))
+                out <- out[keep_lines, ]
+              }
+              names(out) <- paste(names(out), sp, sep = "_")
+              return(out)
             }
-            return(out)
+            return(out_total)
           }
 )
 
@@ -85,12 +97,15 @@ setMethod("get_calib_lines", "MS.models.out",
 ##' 
 
 setMethod("get_formal_data", "MS.models.out",
-          function(obj, subinfo = NULL)
+          function(obj, sp, subinfo = NULL)
           {
+            nameFolder <- file.path(obj@dir.name, sp)
+            model <- get(load(file.path(nameFolder, paste0(sp,".", obj@modeling.id, ".models.out"))))
+            
             if (is.null(subinfo)) {
-              return(load_stored_object(obj@formated.input.data))
+              return(load_stored_object(model@formated.input.data))
             } else if (subinfo == 'MinMax') {
-              env = as.data.frame(get_formal_data(obj)@data.env.var)
+              env = as.data.frame(get_formal_data(model)@data.env.var)
               MinMax = foreach(i = 1:ncol(env)) %do%
                 {
                   x = env[, i]
@@ -104,15 +119,15 @@ setMethod("get_formal_data", "MS.models.out",
               names(MinMax) = colnames(env)
               return(MinMax)
             } else if (subinfo == 'expl.var') {
-              return(as.data.frame(get_formal_data(obj)@data.env.var))
+              return(as.data.frame(get_formal_data(model)@data.env.var))
             } else if (subinfo == 'expl.var.names') {
-              return(obj@expl.var.names)
+              return(model@expl.var.names)
             } else if (subinfo == 'resp.var') {
-              return(get_formal_data(obj)@data.species)
+              return(get_formal_data(model)@data.species)
             } else if (subinfo == 'eval.resp.var') {
-              return(as.numeric(get_formal_data(obj)@eval.data.species))
+              return(as.numeric(get_formal_data(model)@eval.data.species))
             } else if (subinfo == 'eval.expl.var') {
-              return(as.data.frame(get_formal_data(obj)@eval.data.env.var))
+              return(as.data.frame(get_formal_data(model)@eval.data.env.var))
             } else { stop("Unknown subinfo tag")}
           }
 )
@@ -183,7 +198,7 @@ setMethod("get_evaluations", "MS.models.out",
           {
             nameFolder <- file.path(obj@dir.name, sp)
             model <- get(load(file.path(nameFolder, paste0(sp, ".", obj@modeling.id, ".models.out"))))
-            out <- load_stored_object(mod@models.evaluation)
+            out <- load_stored_object(model@models.evaluation)
             if (nrow(out) == 0) {
               cat("\n! models have no evaluations\n")
               return(invisible(NULL))
