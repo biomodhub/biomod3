@@ -130,7 +130,7 @@ MS_EnsembleModeling <- function(ms.mod,
                                 nb.cpu = 1,
                                 seed.val = NULL)
 {
-  .bm_cat("Build Single Models")
+  .bm_cat("Build Ensemble Models")
   
   ## 0. Check arguments ---------------------------------------------------------------------------
   args <- .MS_EnsembleModeling.check.args(

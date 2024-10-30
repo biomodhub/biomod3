@@ -77,16 +77,310 @@ setClass("MS.formated.data",
 
 setMethod('plot', signature(x = 'MS.formated.data', y = "missing"),
           function(x,
-                   calib.lines = NULL,
+                   #calib.lines = NULL,
                    plot.type,
                    plot.output, 
-                   PA,
-                   run,
+                   #PA,
+                   #run,
                    plot.eval,
                    point.size = 1.5,
                    do.plot = TRUE){
-          #Plot adapté
-          })
+
+            args <- .plot.BIOMOD.formated.data.check.args(x = x,
+                                                          #calib.lines = calib.lines,
+                                                          plot.type = plot.type,
+                                                          plot.output = plot.output, 
+                                                          #PA = PA,
+                                                          #run = run,
+                                                          plot.eval = plot.eval,
+                                                          do.plot = do.plot)
+            
+            for (argi in names(args)) { assign(x = argi, value = args[[argi]]) }
+            rm(args)
+            
+            # 1 - extract data for all required data ----------------------
+            
+            nameFolder <- file.path(x@dir.name, x@ms.project, ".BIOMOD_DATA", "single.formated.data")
+            table <- foreach(sp = x@sp.name, .combine = merge) %do% {
+              sfd <- get(load(file.path(nameFolder, paste0(sp,".sfd"))))
+              plot_sfd <- plot(sfd, do.plot = FALSE)
+              df <- plot_sfd$data.plot$data
+              names(df) <- c(sp, "dataset", "x", "y")
+              return(df)
+            }
+            
+            # 2- define colors and breaks ------------------------------------
+            data_breaks <- c(9,10, 11, 12, # presence
+                             19,20, 21, 22, # absence
+                             29,30, 31,         # pseudo-absences
+                             1)              # background
+            data_labels <- c("9" = "**Presences**",
+                             "10" = "Presences (calibration)",
+                             "11" = "Presences (validation)",
+                             "12" = "Presences (evaluation)",
+                             "19" = "**True Absences**",
+                             "20" = "True Absences (calibration)",
+                             "21" = "True Absences (validation)",
+                             "22" = "True Absences (evaluation)",
+                             "29" = "**Pseudo-Absences**",
+                             "30" = "Pseudo-Absences (calibration)",
+                             "31" = "Pseudo-Absences (validation)",
+                             "1" = "Background")
+            data_labels_facet <- c("9" = "**Presences**",
+                                   "10" = "calibration",
+                                   "11" = "validation",
+                                   "12" = "evaluation",
+                                   "19" = "**True Absences**",
+                                   "20" = "calibration",
+                                   "21" = "validation",
+                                   "22" = "evaluation",
+                                   "29" = "**Pseudo-Absences**",
+                                   "30" = "calibration",
+                                   "31" = "validation",
+                                   "1" = NA) # background
+            
+            data_colors <- c("9" = NA,
+                             "10" = "#004488",
+                             "11" = "#6699CC",
+                             "12" = "#6699CC",
+                             "19" = NA,
+                             "20" = "#994455",
+                             "21" = "#EE99AA",
+                             "22" = "#EE99AA",
+                             "29" = NA,
+                             "30" = "#997700",
+                             "31" = "#EECC66",
+                             "1" = "grey70")
+            
+            shape_fit <- 16
+            shape_eval <- 17
+            data_shape <- c("9" = NA,
+                            "10" = shape_fit,
+                            "11" = shape_fit,
+                            "12" = shape_eval,
+                            "19" = NA,
+                            "20" = shape_fit,
+                            "21" = shape_fit,
+                            "22" = shape_eval,
+                            "29" = NA,
+                            "30" = shape_fit,
+                            "31" = shape_fit,
+                            "1" = NA)
+            data_alpha <- c("9" = 0,
+                            "10" = 1,
+                            "11" = 1,
+                            "12" = 1,
+                            "19" = 0,
+                            "20" = 1,
+                            "21" = 1,
+                            "22" = 1,
+                            "29" = 0,
+                            "30" = 1,
+                            "31" = 1,
+                            "1"  = 0)
+            data_background <- "#FFFFFF00"
+            
+            
+            # 3 - prepare plots -------------------------------------------------------
+            this_mask_eval <- rast()
+            if(has.mask){
+              this_mask <- rast(x@data.mask[["calibration"]])
+              this_mask_eval <- this_mask
+            } else {
+              this_mask <- rast()
+            }
+            if(has.mask.eval){
+              this_mask_eval <- rast(x@data.mask[["evaluation"]])
+            }
+            if(has.mask | has.mask.eval){
+              plot_mask <- foreach(this_dataset = unique(table$dataset), 
+                                   .combine = 'c') %do% {
+                                     if(this_dataset == "Evaluation dataset"){
+                                       return(this_mask_eval)
+                                     } else {
+                                       return(this_mask)
+                                     }
+                                   }
+              names(plot_mask) <- unique(table$dataset)
+            }
+            ## 3.1 Raster plot --------------------------------------------------------
+            
+            if(plot.type == "raster"){
+              
+              rast.plot <- foreach(this_dataset = unique(table$dataset), .combine = 'c') %do% {
+                this_rast  <-
+                  rasterize(as.matrix(table[table$dataset == this_dataset, c("x", "y")]), 
+                            plot_mask[[this_dataset]],
+                            table[, x@sp.name], background = 1)
+                names(this_rast) <- x@sp.name
+                this_rast*this_mask
+              }
+              
+              g <- ggplot()+
+                tidyterra::geom_spatraster(data = rast.plot,
+                                           aes(fill = factor(after_stat(value), data_breaks)))+
+                facet_wrap(~lyr)+
+                scale_fill_manual(
+                  NULL,
+                  breaks = data_breaks,
+                  values = data_colors,
+                  labels = data_labels_facet,
+                  na.value = data_background, 
+                  drop = FALSE)+
+                guides(fill = guide_legend(
+                  override.aes = list(alpha = data_alpha),
+                  ncol = 3))+
+                theme(legend.position = "top",
+                      legend.key = element_blank(),
+                      legend.background = element_rect(fill = "grey90"),
+                      legend.text = ggtext::element_markdown())
+              
+            if(do.plot){
+              print(g)
+            }
+            return(list("data.vect"  = table,
+                        "data.rast"  = rast.plot,
+                        "data.label" = data_labels,
+                        "data.plot"  = g))
+          } else {
+            ## 3.2 Points plot --------------------------------------------------------
+            
+            data.df <- as.data.frame(table)
+            data.df <- reshape2::melt(data.df, c("dataset", "x", "y"), value.name = "resp", variable.name = "species")
+            base_g <-  ggplot(data.df)
+            if(has.mask){
+              base_g <- base_g +
+                tidyterra::geom_spatraster(data = this_mask, aes(fill = factor(after_stat(value))))
+            }
+            
+            
+            g <- base_g +      
+              geom_point(aes(x = x, y = y, 
+                             color = factor(resp, levels = data_breaks[-12]),
+                             shape = factor(resp, levels = data_breaks[-12])), 
+                         alpha = 1, size = point.size)+
+              facet_wrap(~species)+
+              scale_color_manual(
+                NULL,
+                breaks = data_breaks,
+                values = data_colors,
+                labels = data_labels_facet,
+                drop = FALSE)+
+              scale_shape_manual(
+                NULL,
+                breaks = data_breaks,
+                values = data_shape,
+                labels = data_labels_facet,
+                drop = FALSE)+
+              scale_fill_manual(
+                guide = "none",
+                breaks = data_breaks,
+                values = data_colors,
+                labels = data_labels,
+                na.value = data_background)+
+              xlab(NULL)+ ylab(NULL)+
+              guides(color = guide_legend(override.aes = list(size = 3),
+                                          ncol = 3))+
+              theme(legend.position = "top",
+                    legend.key = element_blank(),
+                    legend.background = element_rect(fill = "grey90"),
+                    legend.text = ggtext::element_markdown())
+            
+            
+          }
+          if(do.plot){
+            print(g)
+          }
+          return(list("data.table"  = table,
+                      "data.label" = data_labels,
+                      "data.plot"  = g))
+          }
+
+)
+
+
+.plot.BIOMOD.formated.data.check.args <- function(x,
+                                                  calib.lines,
+                                                  plot.type,
+                                                  plot.output, 
+                                                  PA,
+                                                  run,
+                                                  plot.eval,
+                                                  do.plot){
+  
+  
+  ## 1 - check x -----------------------------------------
+  .fun_testIfInherits(TRUE, "x", x, c("MS.formated.data"))
+  
+  
+  ## 3 - check plot.eval ----------------------
+  if (missing(plot.eval)) {
+    plot.eval <- x@has.data.eval
+  } else {
+    stopifnot(is.logical(plot.eval))
+    if(plot.eval & !x@has.data.eval){
+      plot.eval <- FALSE
+      cat('\n  ! Evaluation data are missing and its plot was deactivated')
+    }
+  }
+  
+  ## 4 are proper mask available ? -----------------------
+  has.mask <- rast.has.values(rast(x@data.mask[["calibration"]]))
+  if(plot.eval){
+    has.mask.eval <- length(x@data.mask) > 1
+  } else {
+    has.mask.eval <- FALSE
+  }
+  if (has.mask | has.mask.eval) {  
+    if (!requireNamespace("tidyterra")) {
+      stop("Package `tidyterra` is missing. Please install it with `install.packages('tidyterra')`.")
+    }
+  } 
+  ## 5 - check plot.type  ----------------------
+  if (missing(plot.type)) {
+    plot.type <- "points"
+  } else {
+    .fun_testIfIn(TRUE, "plot.type", plot.type, c("raster","points"))
+    if ( !has.mask & plot.type == "raster") {
+      plot.type <- "points"
+      cat("\n ! no raster available, `plot.type` automatically set to 'points'\n")
+    }
+  }
+  
+  ## 6 - plot.output----------------------
+  if (missing(plot.output)) {
+    plot.output <- "facet"
+  } else {
+    .fun_testIfIn(TRUE, "plot.output", plot.output, c("facet","list"))
+  }
+  
+  if(plot.output == "facet"){
+    if(!requireNamespace("ggtext")){
+      stop("Package `ggtext` is missing. Please install it with `install.packages('ggtext')`.")
+    }
+  }
+  
+  ## 7 - do.plot ----------------------
+  # do.plot
+  stopifnot(is.logical(do.plot))
+  
+  ##  9 - check that coordinates are available -------------------------------
+  if(nrow(x@coord) == 0){
+    stop("coordinates are required to plot BIOMOD.formated.data objects")
+  }
+  
+  ## End - return arguments ----------------------------------------------------
+  return(list(x = x,
+              #calib.lines = calib.lines,
+              plot.type = plot.type,
+              plot.output = plot.output, 
+              #PA = PA,
+              #run = run,
+              plot.eval = plot.eval,
+              do.plot = do.plot,
+              has.mask = has.mask,
+              has.mask.eval = has.mask.eval))
+}
 
 
 setMethod('show', signature('MS.formated.data'),
