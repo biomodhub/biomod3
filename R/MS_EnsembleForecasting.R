@@ -1,5 +1,5 @@
 ###################################################################################################
-##' @name MS_Projection
+##' @name MS_EnsembleForecasting
 ##' @author Helene Blancheteau
 ##' 
 ##' @title Project a range of calibrated species distribution models onto new environment
@@ -131,24 +131,24 @@
 ##' 
 ###################################################################################################
 
-MS_Projection <- function(ms.mod,
-                              proj.name,
-                              new.env,
-                              new.env.xy = NULL,
-                              models.chosen = 'all',
-                              metric.binary = NULL,
-                              metric.filter = NULL,
-                              compress = TRUE,
-                              digits = 0,
-                              build.clamping.mask = TRUE,
-                              nb.cpu = 1,
-                              seed.val = NULL,
-                              ...) {
-  .bm_cat("Do Single Models Projection")
+MS_EnsembleForecasting <- function(ms.mod,
+                          proj.name,
+                          new.env,
+                          new.env.xy = NULL,
+                          models.chosen = 'all',
+                          metric.binary = NULL,
+                          metric.filter = NULL,
+                          compress = TRUE,
+                          digits = 0,
+                          build.clamping.mask = TRUE,
+                          nb.cpu = 1,
+                          seed.val = NULL,
+                          ...) {
+  .bm_cat("Do Ensemble Models Projection")
   
   ## 0. Check arguments ---------------------------------------------------------------------------
-  args <- .MS_Projection.check.args(ms.mod, proj.name, new.env, new.env.xy
-                                        , models.chosen, metric.binary, metric.filter, compress, seed.val, ...)
+  args <- .MS_EnsembleForecasting.check.args(ms.mod, proj.name, new.env, new.env.xy
+                                    , models.chosen, metric.binary, metric.filter, compress, seed.val, ...)
   for (argi in names(args)) { assign(x = argi, value = args[[argi]]) }
   rm(args)
   
@@ -164,18 +164,18 @@ MS_Projection <- function(ms.mod,
                   coord = new.env.xy,
                   data.type = ms.mod@data.type,
                   modeling.id = ms.mod@modeling.id,
-                  type = "mod")
+                  type = "em")
   
   
   cat("\n")
   workflow <- foreach(sp = ms.mod@sp.name) %do% {
     cat("\n\t Projection of", sp)
     # 1. Récupération ms.mod 
-    bm.mod <- get(load(file.path(ms.mod@dir.name, sp, paste0(sp, ".", ms.mod@modeling.id,".models.out"))))
+    bm.em <- get(load(file.path(ms.mod@dir.name, sp, paste0(sp, ".", ms.mod@modeling.id,"ensemble.models.out"))))
     
     models.chosen.sp <- models.chosen[[sp]]
     # 2. Run MS_EnsembleModeling
-    output <- capture.output(proj_sp <- BIOMOD_Projection(bm.mod,
+    output <- capture.output(proj_sp <- BIOMOD_EnsembleForecasting(bm.em,
                                                           proj.name = proj.name,
                                                           new.env = new.env,
                                                           new.env.xy = new.env.xy,
@@ -195,15 +195,15 @@ MS_Projection <- function(ms.mod,
   return(proj_out)
 }
 
-# .MS_Projection.check.args---------------------------------------------
+# .MS_EnsembleForecasting.check.args---------------------------------------------
 
-.MS_Projection.check.args <- function(ms.mod, proj.name, new.env, new.env.xy,
-                                          models.chosen, metric.binary, metric.filter, compress, seed.val, ...)
+.MS_EnsembleForecasting.check.args <- function(ms.mod, proj.name, new.env, new.env.xy,
+                                      models.chosen, metric.binary, metric.filter, compress, seed.val, ...)
 {
   args <- list(...)
   
   ## 1. Check ms.mod ----------------------------------------------------------
-  .fun_testIfInherits(TRUE, "ms.mod", ms.mod, "MS.models.out")
+  .fun_testIfInherits(TRUE, "ms.mod", ms.mod, "MS.ensemble.models.out")
   
   ## 2. Check proj.name -------------------------------------------------------
   if (is.null(proj.name)) {

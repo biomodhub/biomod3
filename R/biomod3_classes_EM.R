@@ -108,12 +108,14 @@ setMethod('show', signature('MS.ensemble.models.out'), function(object) {
 ##' 
 
 setMethod("get_formal_data", "MS.ensemble.models.out",
-          function(obj, subinfo = NULL)
+          function(obj, sp, subinfo = NULL)
           {
+            nameFolder <- file.path(obj@dir.name, sp)
+            em <- get(load(file.path(nameFolder, paste0(sp,".", obj@modeling.id, ".ensemble.models.out"))))
             if (is.null(subinfo)) {
-              return(load_stored_object(obj@models.out))
+              return(load_stored_object(em@models.out))
             } else {
-              bm_form = get_formal_data(obj)
+              bm_form = get_formal_data(em)
               return(get_formal_data(bm_form, subinfo = subinfo))
             }
           }
@@ -159,21 +161,23 @@ setMethod("get_kept_models", "MS.ensemble.models.out", function(obj) { return(ob
 ##' 
 
 setMethod("get_predictions", "MS.ensemble.models.out",
-          function(obj, evaluation = FALSE, full.name = NULL, merged.by.algo = NULL, merged.by.run = NULL
+          function(obj, sp, evaluation = FALSE, full.name = NULL, merged.by.algo = NULL, merged.by.run = NULL
                    , merged.by.PA = NULL, filtered.by = NULL, algo = NULL,
                    model.as.col = FALSE)
           {
-            # check evaluation data availability
-            if (evaluation && (!get_formal_data(obj)@has.evaluation.data)) {
+            nameFolder <- file.path(obj@dir.name, sp)
+            em <- get(load(file.path(nameFolder, paste0(sp,".", obj@modeling.id, ".ensemble.models.out"))))
+             # check evaluation data availability
+            if (evaluation && (!get_formal_data(em)@has.evaluation.data)) {
               warning("!   Calibration data returned because no evaluation data available")
               evaluation = FALSE
             }
             
             # select calibration or eval data
             if (evaluation) { 
-              out <- load_stored_object(obj@models.prediction.eval)
+              out <- load_stored_object(em@models.prediction.eval)
             } else { 
-              out <- load_stored_object(obj@models.prediction)
+              out <- load_stored_object(em@models.prediction)
             }
             
             # subselection of models_selected
@@ -199,10 +203,12 @@ setMethod("get_predictions", "MS.ensemble.models.out",
 ##' 
 
 setMethod("get_evaluations", "MS.ensemble.models.out",
-          function(obj, full.name = NULL, merged.by.algo = NULL, merged.by.run = NULL
+          function(obj, sp, full.name = NULL, merged.by.algo = NULL, merged.by.run = NULL
                    , merged.by.PA = NULL, filtered.by = NULL, algo = NULL, metric.eval = NULL)
           {
-            out <- load_stored_object(obj@models.evaluation)
+            nameFolder <- file.path(obj@dir.name, sp)
+            em <- get(load(file.path(nameFolder, paste0(sp,".", obj@modeling.id, ".ensemble.models.out"))))
+            out <- load_stored_object(em@models.evaluation)
             if (nrow(out) == 0) {
               cat("\n! models have no evaluations\n")
               return(invisible(NULL))
@@ -227,10 +233,12 @@ setMethod("get_evaluations", "MS.ensemble.models.out",
 ##' 
 
 setMethod("get_variables_importance", "MS.ensemble.models.out",
-          function(obj, full.name = NULL, merged.by.algo = NULL, merged.by.run = NULL
+          function(obj, sp, full.name = NULL, merged.by.algo = NULL, merged.by.run = NULL
                    , merged.by.PA = NULL, filtered.by = NULL, algo = NULL, expl.var = NULL)
           {
-            out <- load_stored_object(obj@variables.importance)
+            nameFolder <- file.path(obj@dir.name, sp)
+            em <- get(load(file.path(nameFolder, paste0(sp,".", obj@modeling.id, ".ensemble.models.out"))))
+            out <- load_stored_object(em@variables.importance)
             keep_lines <- .filter_outputs.df(out, subset.list = list(full.name = full.name
                                                                      , merged.by.algo = merged.by.algo
                                                                      , merged.by.run = merged.by.run

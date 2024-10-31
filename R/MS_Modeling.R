@@ -10,8 +10,7 @@
 ##' metrics (see Details).
 ##' 
 ##' 
-##' @param ms.format a \code{\link{BIOMOD.formated.data}} or \code{\link{BIOMOD.formated.data.PA}} 
-##' object returned by the \code{\link{BIOMOD_FormatingData}} function
+##' @param ms.format a \code{\link{MS.formated.data}} object returned by the \code{\link{BIOMOD_FormatingData}} function
 ##' @param modeling.id a \code{character} corresponding to the name (ID) of the simulation set 
 ##' (\emph{a random number by default})
 ##' @param models a \code{vector} containing model names to be computed, must be among 
@@ -21,48 +20,9 @@
 ##' A \code{list} containing for each model a \code{vector} defining which pseudo-absence datasets 
 ##' are to be used, must be among \code{colnames(ms.format@PA.table)}
 ##' 
-##' @param CV.strategy a \code{character} corresponding to the cross-validation selection strategy, 
-##' must be among \code{random}, \code{kfold}, \code{block}, \code{strat}, \code{env} or 
-##' \code{user.defined}
-##' @param CV.nb.rep (\emph{optional, default} \code{0}) \cr
-##' If \code{strategy = 'random'} or \code{strategy = 'kfold'}, an \code{integer} corresponding 
-##' to the number of sets (repetitions) of cross-validation points that will be drawn
-##' @param CV.perc (\emph{optional, default} \code{0}) \cr
-##' If \code{strategy = 'random'}, a \code{numeric} between \code{0} and \code{1} defining the 
-##' percentage of data that will be kept for calibration
-##' @param CV.k (\emph{optional, default} \code{0}) \cr
-##' If \code{strategy = 'kfold'} or \code{strategy = 'strat'} or \code{strategy = 'env'}, an 
-##' \code{integer} corresponding to the number of partitions 
-##' @param CV.balance (\emph{optional, default} \code{'presences'}) \cr
-##' If \code{strategy = 'strat'} or \code{strategy = 'env'}, a \code{character} corresponding 
-##' to how data will be balanced between partitions, must be either \code{presences} or
-##' \code{absences} 
-##' @param CV.env.var (\emph{optional}) \cr If \code{strategy = 'env'}, a \code{character} 
-##' corresponding to the environmental variables used to build the partition. \code{k} partitions 
-##' will be built for each environmental variables. By default the function uses all 
-##' environmental variables available.
-##' @param CV.strat (\emph{optional, default} \code{'both'}) \cr
-##' If \code{strategy = 'env'}, a \code{character} corresponding to how data will partitioned 
-##' along gradient, must be among \code{x}, \code{y}, \code{both}
-##' @param CV.user.table (\emph{optional, default} \code{NULL}) \cr
-##' If \code{strategy = 'user.defined'}, a \code{matrix} or \code{data.frame} defining for each 
-##' repetition (in columns) which observation lines should be used for models calibration 
-##' (\code{TRUE}) and validation (\code{FALSE})
-##' @param CV.do.full.models (\emph{optional, default} \code{TRUE}) \cr  
-##' A \code{logical} value defining whether models should be also calibrated and validated over 
-##' the whole dataset (and pseudo-absence datasets) or not
+##' @param params.CV a \code{list} with the species names associated to the parameters of Cross-Validation. See BIOMOD_Modeling
+##' @param params.OPT a \code{list} with the species names associated to the options of the algorithms. See BIOMOD_Modeling
 ##' 
-##' @param OPT.strategy a \code{character} corresponding to the method to select models' 
-##' parameters values, must be either \code{default}, \code{bigboss}, \code{user.defined}, 
-##' \code{tuned}
-##' @param OPT.user.val (\emph{optional, default} \code{NULL}) \cr
-##' A \code{list} containing parameters values for some (all) models
-##' @param OPT.user.base (\emph{optional, default} \code{bigboss}) \cr A character, 
-##' \code{default} or \code{bigboss} used when \code{OPT.strategy = 'user.defined'}. 
-##' It sets the bases of parameters to be modified by user defined values.
-##' @param OPT.user (\emph{optional, default} \code{TRUE}) \cr  
-##' A \code{\link{BIOMOD.models.options}} object returned by the \code{\link{bm_ModelingOptions}} 
-##' function
 ##' 
 ##' @param weights (\emph{optional, default} \code{NULL}) \cr 
 ##' A \code{vector} of \code{numeric} values corresponding to observation weights (one per 
@@ -92,20 +52,7 @@
 ##' 
 ##' @return
 ##' 
-##' A \code{\link{BIOMOD.models.out}} object containing models outputs, or links to saved outputs. \cr
-##' Models outputs are stored out of \R (for memory storage reasons) in 2 different folders 
-##' created in the current working directory :
-##' \enumerate{
-##'   \item a \emph{models} folder, named after the \code{resp.name} argument of 
-##'   \code{\link{BIOMOD_FormatingData}}, and containing all calibrated models for each 
-##'   repetition and pseudo-absence run
-##'   \item a \emph{hidden} folder, named \code{.BIOMOD_DATA}, and containing outputs related 
-##'   files (original dataset, calibration lines, pseudo-absences selected, predictions, 
-##'   variables importance, evaluation values...), that can be retrieved with 
-##'   \href{https://biomodhub.github.io/biomod2/reference/getters.out.html}{\code{get_[...]}} 
-##'   or \code{\link{load}} functions, and used by other \pkg{biomod2} functions, like 
-##'   \code{\link{BIOMOD_Projection}} or \code{\link{BIOMOD_EnsembleModeling}}
-##' }
+##' A \code{\link{MS.models.out}} object acting as a proxi for the created \code{BIOMOD.models.out}.
 ##' 
 ##' @importFrom foreach foreach %do%
 ##' @importFrom biomod2 BIOMOD_Modeling

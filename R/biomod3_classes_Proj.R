@@ -288,15 +288,6 @@ setMethod('show', signature('MS.projection.out'), function(object)
   cat("\n")
   cat("\nmodeling.id :", object@modeling.id , "(", object@models.out@link , ")", fill = .Options$width)
   cat("\nmodels.projected :", toString(object@models.projected), fill = .Options$width)
-  df.info <- .extract_projlinkInfo(object)
-  if (any(df.info$type == "bin")) {
-    available.metric <- unique(subset(df.info, df.info$type == "bin")$metric)
-    cat("\navailable binary projection :", toString(available.metric), fill = .Options$width)
-  }
-  if (any(df.info$type == "filt")) {
-    available.metric <- unique(subset(df.info, df.info$type == "filt")$metric)
-    cat("\navailable filtered projection :", toString(available.metric), fill = .Options$width)
-  }
   .bm_cat()
 })
 
@@ -355,20 +346,23 @@ setMethod('free', signature('MS.projection.out'), function(obj)
 ##' 
 
 setMethod("get_predictions", "MS.projection.out",
-          function(obj, metric.binary = NULL, metric.filter = NULL
+          function(obj, sp, metric.binary = NULL, metric.filter = NULL
                    , full.name = NULL, PA = NULL, run = NULL, algo = NULL
                    , merged.by.algo = NULL, merged.by.run = NULL
                    , merged.by.PA = NULL, filtered.by = NULL, 
                    model.as.col = FALSE, ...)
-          {
+          { 
+            nameFolder <- file.path(obj@dir.name, sp, paste0("proj_", obj@proj.name))
+            proj <- get(load(file.path(nameFolder, paste0(sp,".", obj@proj.name, ".projection.out"))))
+            
             # extract layers from obj@proj.out@link concerned by metric.filter or metric.binary
-            selected.layers <- .extract_selected.layers(obj, 
+            selected.layers <- .extract_selected.layers(proj, 
                                                         metric.binary = metric.binary,
                                                         metric.filter = metric.filter)
-            out <- load_stored_object(obj@proj.out, layer = selected.layers)
+            out <- load_stored_object(proj@proj.out, layer = selected.layers)
             
             # subselection of models_selected
-            if (obj@type == "SpatRaster") {
+            if (proj@type == "SpatRaster") {
               if (length(grep("EM|merged", names(out))) > 0) {
                 keep_layers <- .filter_outputs.vec(names(out), obj.type = "em", 
                                                    subset.list = list(full.name =  full.name

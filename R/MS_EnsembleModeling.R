@@ -2,110 +2,83 @@
 ##' @name MS_EnsembleModeling
 ##' @author Helene Blancheteau
 ##' 
-##' @title Run a range of species distribution models
+##' @title Create and evaluate an ensemble set of models and predictions
 ##' 
-##' @description This function allows to calibrate and evaluate a range of modeling techniques 
-##' for a given species distribution. The dataset can be split up in calibration/validation parts,
-##' and the predictive power of the different models can be estimated using a range of evaluation 
-##' metrics (see Details).
+##' @description This function allows to combine a range of models built with the 
+##' \code{\link{MS_Modeling}} function in one (or several) ensemble model. Modeling 
+##' uncertainty can be assessed as well as variables importance, ensemble predictions can be 
+##' evaluated against original data, and created ensemble models can be projected over new 
+##' conditions (see Details).
 ##' 
 ##' 
-##' @param ms.mod a \code{\link{BIOMOD.formated.data}} or \code{\link{BIOMOD.formated.data.PA}} 
-##' object returned by the \code{\link{BIOMOD_FormatingData}} function
-##' @param modeling.id a \code{character} corresponding to the name (ID) of the simulation set 
-##' (\emph{a random number by default})
-##' @param models a \code{vector} containing model names to be computed, must be among 
-##' \code{ANN}, \code{CTA}, \code{FDA}, \code{GAM}, \code{GBM}, \code{GLM}, \code{MARS}, 
-##' \code{MAXENT}, \code{MAXNET}, \code{RF}, \code{RFd}, \code{SRE}, \code{XGBOOST}
-##' @param models.pa (\emph{optional, default} \code{NULL}) \cr 
-##' A \code{list} containing for each model a \code{vector} defining which pseudo-absence datasets 
-##' are to be used, must be among \code{colnames(ms.mod@PA.table)}
-##' 
-##' @param CV.strategy a \code{character} corresponding to the cross-validation selection strategy, 
-##' must be among \code{random}, \code{kfold}, \code{block}, \code{strat}, \code{env} or 
-##' \code{user.defined}
-##' @param CV.nb.rep (\emph{optional, default} \code{0}) \cr
-##' If \code{strategy = 'random'} or \code{strategy = 'kfold'}, an \code{integer} corresponding 
-##' to the number of sets (repetitions) of cross-validation points that will be drawn
-##' @param CV.perc (\emph{optional, default} \code{0}) \cr
-##' If \code{strategy = 'random'}, a \code{numeric} between \code{0} and \code{1} defining the 
-##' percentage of data that will be kept for calibration
-##' @param CV.k (\emph{optional, default} \code{0}) \cr
-##' If \code{strategy = 'kfold'} or \code{strategy = 'strat'} or \code{strategy = 'env'}, an 
-##' \code{integer} corresponding to the number of partitions 
-##' @param CV.balance (\emph{optional, default} \code{'presences'}) \cr
-##' If \code{strategy = 'strat'} or \code{strategy = 'env'}, a \code{character} corresponding 
-##' to how data will be balanced between partitions, must be either \code{presences} or
-##' \code{absences} 
-##' @param CV.env.var (\emph{optional}) \cr If \code{strategy = 'env'}, a \code{character} 
-##' corresponding to the environmental variables used to build the partition. \code{k} partitions 
-##' will be built for each environmental variables. By default the function uses all 
-##' environmental variables available.
-##' @param CV.strat (\emph{optional, default} \code{'both'}) \cr
-##' If \code{strategy = 'env'}, a \code{character} corresponding to how data will partitioned 
-##' along gradient, must be among \code{x}, \code{y}, \code{both}
-##' @param CV.user.table (\emph{optional, default} \code{NULL}) \cr
-##' If \code{strategy = 'user.defined'}, a \code{matrix} or \code{data.frame} defining for each 
-##' repetition (in columns) which observation lines should be used for models calibration 
-##' (\code{TRUE}) and validation (\code{FALSE})
-##' @param CV.do.full.models (\emph{optional, default} \code{TRUE}) \cr  
-##' A \code{logical} value defining whether models should be also calibrated and validated over 
-##' the whole dataset (and pseudo-absence datasets) or not
-##' 
-##' @param OPT.strategy a \code{character} corresponding to the method to select models' 
-##' parameters values, must be either \code{default}, \code{bigboss}, \code{user.defined}, 
-##' \code{tuned}
-##' @param OPT.user.val (\emph{optional, default} \code{NULL}) \cr
-##' A \code{list} containing parameters values for some (all) models
-##' @param OPT.user.base (\emph{optional, default} \code{bigboss}) \cr A character, 
-##' \code{default} or \code{bigboss} used when \code{OPT.strategy = 'user.defined'}. 
-##' It sets the bases of parameters to be modified by user defined values.
-##' @param OPT.user (\emph{optional, default} \code{TRUE}) \cr  
-##' A \code{\link{BIOMOD.models.options}} object returned by the \code{\link{bm_ModelingOptions}} 
-##' function
-##' 
-##' @param weights (\emph{optional, default} \code{NULL}) \cr 
-##' A \code{vector} of \code{numeric} values corresponding to observation weights (one per 
-##' observation, see Details)
-##' @param prevalence (\emph{optional, default} \code{NULL}) \cr 
-##' A \code{numeric} between \code{0} and \code{1} corresponding to the species prevalence to 
-##' build '\emph{weighted response weights}' (see Details)
+##' @param bm.mod a \code{\link{MS.models.out}} object returned by the 
+##' \code{\link{MS_Modeling}} function
+##' @param models.chosen a \code{vector} containing model names to be kept, must be either 
+##' \code{all} or a sub-selection of model names that can be obtained with the 
+##' \code{\link{get_built_models}} function
+##' @param em.by a \code{character} corresponding to the way kept models will be combined to build 
+##' the ensemble models, must be among \code{all}, \code{algo}, \code{PA}, \code{PA+algo}, 
+##' \code{PA+run}
+##' @param em.algo a \code{vector} corresponding to the ensemble models that will be computed, 
+##' must be among \code{'EMmean'}, \code{'EMmedian'}, \code{'EMcv'}, \code{'EMci'}, 
+##' \code{'EMca'}, \code{'EMwmean'}
+##' @param metric.select a \code{vector} containing evaluation metric names to be used together with 
+##' \code{metric.select.thresh} to exclude single models based on their evaluation scores 
+##' (for ensemble methods like probability weighted mean or committee averaging). Must be among  
+##' \code{all} (same evaluation metrics than those of \code{bm.mod}), \code{user.defined} 
+##' (and defined through \code{metric.select.table}) or \code{POD}, \code{FAR}, \code{POFD}, 
+##' \code{SR}, \code{ACCURACY}, \code{BIAS}, \code{ROC}, \code{TSS}, \code{KAPPA}, \code{OR}, 
+##' \code{ORSS}, \code{CSI}, \code{ETS}, \code{BOYCE}, \code{MPA}
+##' @param metric.select.thresh (\emph{optional, default} \code{NULL}) \cr 
+##' A \code{vector} of \code{numeric} values corresponding to the minimum scores (one for each 
+##' \code{metric.select}) below which single models will be excluded from the ensemble model 
+##' building
+##' @param metric.select.table (\emph{optional, default} \code{NULL}) \cr If 
+##' \code{metric.select = 'user.defined'}, a \code{data.frame} containing evaluation scores 
+##' calculated for each single models and that will be compared to \code{metric.select.thresh} 
+##' values to exclude some of them from the ensemble model building, with \code{metric.select} 
+##' rownames, and \code{models.chosen} colnames
+##' @param metric.select.dataset (\emph{optional, default} \code{'validation'} 
+##' \emph{if possible}). A character determining which dataset should be used to filter and/or 
+##' weigh the ensemble models should be among 'evaluation', 'validation' or 'calibration'.
 ##' @param metric.eval a \code{vector} containing evaluation metric names to be used, must 
-##' be among \code{ROC}, \code{TSS}, \code{KAPPA}, \code{ACCURACY}, \code{BIAS}, \code{POD}, 
-##' \code{FAR}, \code{POFD}, \code{SR}, \code{CSI}, \code{ETS}, \code{OR}, 
-##' \code{ORSS}, \code{BOYCE}, \code{MPA}, \code{RMSE}, \code{MAE}, \code{MSE}, \code{Rsquared}, \code{Rsquared_aj},
-##' \code{Max_error}, \code{Accuracy}, \code{"Recall"}, \code{"Precision"}, \code{"F1"}
+##' be among  \code{POD}, \code{FAR}, \code{POFD}, \code{SR}, \code{ACCURACY}, \code{BIAS}, 
+##' \code{ROC}, \code{TSS}, \code{KAPPA}, \code{OR}, \code{ORSS}, \code{CSI}, \code{ETS}, 
+##' \code{BOYCE}, \code{MPA}
 ##' @param var.import (\emph{optional, default} \code{NULL}) \cr 
 ##' An \code{integer} corresponding to the number of permutations to be done for each variable to 
 ##' estimate variable importance
-##' @param scale.models (\emph{optional, default} \code{FALSE}) \cr 
-##' A \code{logical} value defining whether all models predictions should be scaled with a 
-##' binomial GLM or not
+##' @param EMci.alpha (\emph{optional, default} \code{0.05}) \cr 
+##' A \code{numeric} value corresponding to the significance level to estimate confidence interval
+##' @param EMwmean.decay (\emph{optional, default} \code{proportional}) \cr A
+##'   value defining the relative importance of the weights (if \code{'EMwmean'}
+##'   was given to argument \code{em.algo}). A high value will strongly
+##'   discriminate \emph{good} models from the \emph{bad} ones (see Details),
+##'   while \code{proportional} will attribute weights proportionally to the
+##'   models evaluation scores
+##' 
 ##' @param nb.cpu (\emph{optional, default} \code{1}) \cr 
 ##' An \code{integer} value corresponding to the number of computing resources to be used to 
-##' parallelize the single models computation
+##' parallelize the single models predictions and the ensemble models computation
 ##' @param seed.val (\emph{optional, default} \code{NULL}) \cr 
 ##' An \code{integer} value corresponding to the new seed value to be set
 ##' @param do.progress (\emph{optional, default} \code{TRUE}) \cr 
 ##' A \code{logical} value defining whether the progress bar is to be rendered or not
+##'
+##'@return
+##' A \code{\link{MS.ensemble.models.out}} object acting as a proxi for the created \code{BIOMOD.ensemble.models.out}.
 ##' 
 ##' 
-##' @return
 ##' 
-##' A \code{\link{BIOMOD.models.out}} object containing models outputs, or links to saved outputs. \cr
-##' Models outputs are stored out of \R (for memory storage reasons) in 2 different folders 
-##' created in the current working directory :
-##' \enumerate{
-##'   \item a \emph{models} folder, named after the \code{resp.name} argument of 
-##'   \code{\link{BIOMOD_FormatingData}}, and containing all calibrated models for each 
-##'   repetition and pseudo-absence run
-##'   \item a \emph{hidden} folder, named \code{.BIOMOD_DATA}, and containing outputs related 
-##'   files (original dataset, calibration lines, pseudo-absences selected, predictions, 
-##'   variables importance, evaluation values...), that can be retrieved with 
-##'   \href{https://biomodhub.github.io/biomod2/reference/getters.out.html}{\code{get_[...]}} 
-##'   or \code{\link{load}} functions, and used by other \pkg{biomod2} functions, like 
-##'   \code{\link{BIOMOD_Projection}} or \code{\link{BIOMOD_EnsembleModeling}}
-##' }
+##' @keywords models ensemble weights
+##' 
+##' 
+##' @seealso \code{\link{BIOMOD_FormatingData}}, \code{\link{bm_ModelingOptions}}, 
+##' \code{\link{bm_CrossValidation}}, \code{\link{bm_VariablesImportance}}, 
+##' \code{\link{BIOMOD_Modeling}}, \code{\link{BIOMOD_EnsembleForecasting}},
+##' \code{\link{bm_PlotEvalMean}}, \code{\link{bm_PlotEvalBoxplot}}, 
+##' \code{\link{bm_PlotVarImpBoxplot}}, \code{\link{bm_PlotResponseCurves}}
+##' @family Main functions
 ##' 
 ##' @importFrom foreach foreach %do%
 ##' @importFrom biomod2 BIOMOD_Modeling

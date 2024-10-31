@@ -6,13 +6,12 @@
 ##' 
 ##' @description This function gathers together all input data needed (\emph{xy, 
 ##' presences/absences, explanatory variables, and the same for evaluation data if available}) to 
-##' run \pkg{biomod2} models. It allows to select pseudo-absences if no absence data is available, 
-##' with different strategies (see Details).
+##' run \pkg{biomod2} models. It run the function BIOMOD_FormatingData for all the different species.
 ##' 
 ##' 
+##' @param ms.project.name a \code{character} corresponding to the name of your project for your multispecies modelling
 ##' @param dir.name (\emph{optional, default} \code{.}) \cr
 ##' A \code{character} corresponding to the modeling folder
-##' @param ms.project.name a \code{character} corresponding to the multispecies project name
 ##' @param resp.name a \code{character vector} corresponding to the species name
 ##' 
 ##' @param resp.var a \code{vector} or a \code{\link[terra:vect]{SpatVector}} containing your response variable (See Details).
