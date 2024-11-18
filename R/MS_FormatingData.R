@@ -88,7 +88,7 @@ MS_FormatingData <- function(ms.project.name,
                              resp.name = NULL,
                              resp.var = NULL,
                              expl.var = NULL,
-                             data.type = "binary",
+                             data.type = NULL,
                              resp.xy = NULL,
                              eval.resp.var = NULL,
                              eval.expl.var = NULL,
@@ -102,7 +102,7 @@ MS_FormatingData <- function(ms.project.name,
   .bm_cat("MultiSpecies Data Formating")
   
   ## 1. check args ------------------------------------------------------------
-  args <- .MS_FormatingData.check.args(resp.name, dir.name)
+  args <- .MS_FormatingData.check.args(resp.name, dir.name, data.type, resp.xy, expl.var, single.formated.data)
   for (argi in names(args)) { assign(x = argi, value = args[[argi]]) }
   rm(args)
   
@@ -200,7 +200,7 @@ MS_FormatingData <- function(ms.project.name,
 
 # Argument Check -------------------------------------------------------------
 
-.MS_FormatingData.check.args <- function(resp.name, dir.name)
+.MS_FormatingData.check.args <- function(resp.name, dir.name, data.type, resp.xy, expl.var, single.formated.data)
 {
   ## 0. Checking names (resp.name available ?) --------------------------------
   if (any(grepl('/', resp.name))) {
@@ -215,6 +215,24 @@ MS_FormatingData <- function(ms.project.name,
   if (!dir.exists(dir.name)) {
     stop(paste0("Modeling folder '", dir.name, "' does not exist"))
   }
+  
+  if (length(single.formated.data) != 0){
+    dt <- ifelse(is.null(data.type), single.formated.data[[1]]@data.type, data.type)
+    #xy <- ifelse(is.null(resp.xy), single.formated.data[[1]]@coord, resp.xy)
+    
+    for (i in 1:length(single.formated.data)){
+      bm.format <- single.formated.data[[i]]
+      if (dt != bm.format@data.type){
+        stop("All your species must have the same datatype")
+      }
+
+      # if (!identical(MS.format@coord, bm.format@coord) | 
+      #     !identical(MS.format@data.env.var,bm.format@data.env.var)){
+      #   stop("Your environnement and coord must be the same")
+      # }
+    }
+  }
+  
   
   return(list(resp.name = resp.name, dir.name = dir.name))
 }

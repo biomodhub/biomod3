@@ -102,7 +102,9 @@ MS_Modeling <- function(ms.format,
     sp.name = ms.format@sp.name,
     data.type = ms.format@data.type,
     expl.var.names = names(ms.format@data.env.var),
-    scale.models = scale.models
+    scale.models = scale.models,
+    models.computed = list(),
+    models.failed = list()
   )
   
   nameFolder <- file.path(ms.format@dir.name, ms.format@ms.project, ".BIOMOD_DATA", "single.formated.data")
@@ -143,10 +145,8 @@ MS_Modeling <- function(ms.format,
                                                        seed.val = NULL))
     
     # 3.Stockage
-    summary.models.computed <- data.frame("species" = sp, 
-                                          "models.computed" = length(sfd_models@models.computed),
-                                          "models.failed" = length(sfd_models@models.failed))
-    MSmodels@summary.models.computed <- rbind(MSmodels@summary.models.computed, summary.models.computed)
+    MSmodels@models.computed[[sp]] = sfd_models@models.computed
+    MSmodels@models.failed[[sp]] = sfd_models@models.failed
   }
   
   .bm_cat("Done")

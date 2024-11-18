@@ -319,24 +319,24 @@ setMethod("get_projected_models", "MS.projection.out",
           }
 )
 
-## free.MS.projection.out --------------------------------------------------
-##' 
-##' @rdname getters.out
-##' @export
-##' @importFrom terra rast
-
-setMethod('free', signature('MS.projection.out'), function(obj)
-{
-  if (inherits(obj@proj.out, "BIOMOD.stored.data.frame")) {
-    obj@proj.out@val  <- data.frame()
-  } else if (inherits(obj@proj.out, "BIOMOD.stored.SpatRaster")) {
-    obj@proj.out@val <- wrap(rast(matrix()))
-  } else {
-    obj@proj.out@val <- NULL
-  }
-  obj@proj.out@inMemory <- FALSE
-  return(obj)
-})
+# ## free.MS.projection.out --------------------------------------------------
+# ##' 
+# ##' @rdname getters.out
+# ##' @export
+# ##' @importFrom terra rast
+# 
+# setMethod('free', signature('MS.projection.out'), function(obj)
+# {
+#   if (inherits(obj@proj.out, "BIOMOD.stored.data.frame")) {
+#     obj@proj.out@val  <- data.frame()
+#   } else if (inherits(obj@proj.out, "BIOMOD.stored.SpatRaster")) {
+#     obj@proj.out@val <- wrap(rast(matrix()))
+#   } else {
+#     obj@proj.out@val <- NULL
+#   }
+#   obj@proj.out@inMemory <- FALSE
+#   return(obj)
+# })
 
 ## get_predictions.MS.projection.out ---------------------------------------
 # (the method is used for EM as well)

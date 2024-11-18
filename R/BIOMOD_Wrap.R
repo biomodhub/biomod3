@@ -228,8 +228,64 @@ setMethod(f= "BIOMOD_Wrap", signature(ms.project.name = "missing"), function(ms.
               "ensemble.models" = em.models))
 } )
 
+#======================================================================================================
 
-setMethod("BIOMOD_Wrap", signature(ms.project.name = "character"), function(ms.project.name, resp.name){
+## BIOMOD_Wrap for ms 
+
+setMethod("BIOMOD_Wrap", signature(ms.project.name = "character"), function(ms.project.name,
+                                                                            dir.name = ".",
+                                                                            modeling.id = as.character(format(Sys.time(), "%s")),
+                                                                            data.type = "binary",
+                                                                            resp.name,
+                                                                            resp.var,
+                                                                            resp.xy = NULL,
+                                                                            expl.var,
+                                                                            eval.resp.var = NULL,
+                                                                            eval.resp.xy = NULL,
+                                                                            eval.expl.var = NULL,
+                                                                            filter.raster = FALSE,
+                                                                            params.PA,
+                                                                            models, ### mettre un défaut ? 
+                                                                            models.pa = NULL,
+                                                                            metric.eval = c("KAPPA", "TSS", "ROC"),
+                                                                            weights = NULL,
+                                                                            prevalence = NULL,
+                                                                            scale.models = FALSE,
+                                                                            var.import = 0,
+                                                                            params.CV,
+                                                                            params.OPT,
+                                                                            em.algo,
+                                                                            params.EM,
+                                                                            seed.val = NULL,
+                                                                            nb.cpu = 1){
+  
+  ## 0. Check arguments ---------------------------------------------------------------------------
+  args <- .BIOMOD_Wrap.check.args(dir.name = dir.name,
+                                  modeling.id = modeling.id,
+                                  data.type = data.type,
+                                  resp.name = resp.name,
+                                  resp.var = resp.var,
+                                  resp.xy = resp.xy,
+                                  expl.var = expl.var,
+                                  eval.resp.var = eval.resp.var,
+                                  eval.resp.xy = eval.resp.xy,
+                                  eval.expl.var = eval.expl.var,
+                                  filter.raster = filter.raster,
+                                  params.PA = params.PA,
+                                  models = models,
+                                  models.pa = models.pa,
+                                  metric.eval = metric.eval,
+                                  var.import = var.import,
+                                  params.CV = params.CV,
+                                  params.OPT = params.OPT,
+                                  em.algo = em.algo,
+                                  params.EM = params.EM,
+                                  seed.val = seed.val,
+                                  nb.cpu = nb.cpu
+  )
+  for (argi in names(args)) { assign(x = argi, value = args[[argi]]) }
+  rm(args)
+  
   formated.data <- MS_FormatingData(ms.project.name = "test_modelisation",
                                      dir.name = '.',
                                      resp.name = c("PantheraOnca", "PteropusGiganteus"),
@@ -298,10 +354,6 @@ setMethod("BIOMOD_Wrap", signature(ms.project.name = "character"), function(ms.p
                                     seed.val,
                                     nb.cpu)
 {
-  ## Tout va être vérifier dans les fonctions mais on fait tourner un peu avant pour être arrêter après ? 
-  # Appeler les fonctions check ? 
-  # Check juste les parameters
-
   ## 1. Check dir.name and modeling.id
   if (!dir.exists(dir.name)) {
     stop(paste0("Modeling folder '", dir.name, "' does not exist"))
@@ -309,20 +361,12 @@ setMethod("BIOMOD_Wrap", signature(ms.project.name = "character"), function(ms.p
   if (!is.character(modeling.id) || length(modeling.id) > 1) { stop("modeling.id must be a 'character' of length 1") }
   
   ## 2. Check params.PA
-  names.params.PA <- c("PA.nb.rep", "PA.nb.absences", "PA.strategy", "PA.dist.min", "PA.dist.max",
-                       "PA.sre.quant", "PA.fact.aggr", "PA.user.table")
-  if (missing(params.PA)){
-    params.PA <- list(PA.nb.rep = 0,
-                      PA.nb.absences = 1000,
-                      PA.strategy = NULL,
-                      PA.dist.min = 0,
-                      PA.dist.max = NULL,
-                      PA.sre.quant = 0.025,
-                      PA.fact.aggr = NULL,
-                      PA.user.table = NULL)
+  if (length(resp.name) == 1){
+    params.PA <- check.params.PA(params.PA)
   } else {
-    .fun_testIfIn(TRUE, "names of params.PA", names(params.PA), names.params.PA)
-    ## faire des vrais check ou laisser formating data faire le job ? 
+    for (sp in resp.name){
+      params.PA[[sp]] <- check.params.PA(params.PA[[sp]])
+    }
   }
   
   ## 3. Check modeling parameters
@@ -363,63 +407,13 @@ setMethod("BIOMOD_Wrap", signature(ms.project.name = "character"), function(ms.p
     }
   }
   
-  # ## 3.3 prevalence arguments --------------------------------------------
-  # if (!is.null(prevalence)) {
-  #   .fun_testIf01(TRUE, "prevalence", prevalence)
-  # } else {
-  #   prevalence = 0.5
-  # }
-  # 
-  # ## 3.4 weights arguments -----------------------------------------------
-  # if (is.null(weights)) {
-  #   if (!is.null(prevalence) & bm.format@data.type != "ordinal") {
-  #     cat("\n\t> Automatic weights creation to rise a", prevalence, "prevalence")
-  #     data.sp <- as.numeric(bm.format@data.species)
-  #     if (inherits(bm.format, "BIOMOD.formated.data.PA")) {
-  #       weights.pa <- foreach(pa = 1:ncol(bm.format@PA.table), .combine = "cbind") %do%
-  #         {
-  #           ind.PA <- which(bm.format@PA.table[, pa] == TRUE)
-  #           data.sp_pa <- data.sp[ind.PA]
-  #           data.sp_pa[which(is.na(data.sp_pa))] <- 0
-  #           weights <- .automatic_weights_creation(data.sp_pa, prev = prevalence)
-  #           
-  #           wei <- rep(NA, length(data.sp))
-  #           wei[ind.PA] <- weights
-  #           return(matrix(wei, ncol = 1))
-  #         }
-  #       weights.pa <- cbind(weights.pa, rep(1, nrow(weights.pa)))
-  #       colnames(weights.pa) <- c(colnames(bm.format@PA.table), "allData")
-  #       weights <- weights.pa
-  #     } else {
-  #       weights <- .automatic_weights_creation(data.sp, prev = prevalence)
-  #       weights <- matrix(weights, nrow = length(weights), ncol = 1)
-  #       colnames(weights) <- "allData"
-  #     }
-  #   } else { ## NEVER OCCURRING NO ?? --> now happen with the abundance
-  #     cat("\n\t> No weights : all observations will have the same weight\n")
-  #     #weights <- rep(1, length(bm.format@data.species))
-  #   }
-  # } else {
-  #   if (!is.numeric(weights)) { stop("weights must be a numeric vector") }
-  #   if (length(weights) != length(bm.format@data.species)) {
-  #     stop("The number of 'Weight' does not match with the input calibration data. Simulation cannot proceed.")
-  #   }
-  #   if (inherits(bm.format, "BIOMOD.formated.data.PA")) {
-  #     weights.pa <- foreach(pa = 1:ncol(bm.format@PA.table), .combine = "cbind") %do%
-  #       {
-  #         wei <- weights
-  #         wei[which(bm.format@PA.table[, pa] == FALSE | is.na(bm.format@PA.table[, pa]))] <- NA
-  #         return(matrix(wei, ncol = 1))
-  #       }
-  #     weights.pa <- cbind(weights.pa, rep(1, nrow(weights.pa)))
-  #     colnames(weights.pa) <- c(colnames(bm.format@PA.table), "allData")
-  #     weights <- weights.pa
-  #   } else {
-  #     weights <- matrix(weights, nrow = length(weights), ncol = 1)
-  #     colnames(weights) <- "allData"
-  #   }
-  # }
-  # 
+  ## 3.3 prevalence arguments --------------------------------------------
+  if (!is.null(prevalence)) {
+    .fun_testIf01(TRUE, "prevalence", prevalence)
+  } else {
+    prevalence = 0.5
+  }
+  
   
   ## 3.5 metric.eval arguments -------------------------------------------
   metric.eval <- unique(metric.eval)
@@ -517,21 +511,13 @@ setMethod("BIOMOD_Wrap", signature(ms.project.name = "character"), function(ms.p
   }
   
   ## 5. Check params.OPT
-  names.params.OPT <- c("OPT.strategy", "OPT.user.val", "OPT.user.base", "OPT.user")
-  if (missing(params.OPT)){
-    params.OPT <- list(OPT.strategy = 'bigboss',
-                      OPT.user.val = NULL,
-                      OPT.user.base = 'bigboss',
-                      OPT.user = NULL)
+  if (length(resp.name) == 1){
+    params.OPT <- check.params.OPT(params.OPT)
   } else {
-    .fun_testIfIn(TRUE, "names of params.OPT", names(params.OPT), names.params.OPT)
-    
-    .fun_testIfIn(TRUE, "OPT.strategy", params.OPT$OPT.strategy, c("bigboss", "default", "tuned", "user.defined"))
-    
-    if (!is.null(params.OPT$OPT.user)) {
-      .fun_testIfInherits(TRUE, "OPT.user", params.OPT$OPT.user, "BIOMOD.models.options")
+    for (sp in resp.name){
+      params.OPT[[sp]] <- check.params.OPT(params.OPT[[sp]])
     }
-  }  
+  }
   
   ## 6. Check params.EM
   names.params.EM <- c("models.chosen", "em.by", "metric.select", "metric.select.thresh", "metric.select.table",
@@ -568,4 +554,122 @@ setMethod("BIOMOD_Wrap", signature(ms.project.name = "character"), function(ms.p
 
 
 
+check.params.PA <- function(params.PA){
+  names.params.PA <- c("PA.nb.rep", "PA.nb.absences", "PA.strategy", "PA.dist.min", "PA.dist.max",
+                       "PA.sre.quant", "PA.fact.aggr", "PA.user.table")
+  if (missing(params.PA)){
+    params.PA <- list(PA.nb.rep = 0,
+                      PA.nb.absences = 1000,
+                      PA.strategy = NULL,
+                      PA.dist.min = 0,
+                      PA.dist.max = NULL,
+                      PA.sre.quant = 0.025,
+                      PA.fact.aggr = NULL,
+                      PA.user.table = NULL)
+  } else {
+    .fun_testIfIn(TRUE, "names of params.PA", names(params.PA), names.params.PA)
+    #other check ? They will be done a few moment later anyway ? 
+  }
+  return(params.PA)
+}
 
+
+check.params.CV <- function(params.CV){
+  names.params.CV <- c("CV.nb.rep", "CV.strategy", "CV.perc", "CV.k", "CV.balance",
+                       "CV.env.var", "CV.strat", "CV.user.table", "CV.do.full.models")
+  if (missing(params.CV)){
+    params.CV <- list(CV.strategy = 'random',
+                      CV.nb.rep = 1,
+                      CV.perc = 0.7,
+                      CV.k = NULL,
+                      CV.balance = NULL,
+                      CV.env.var = NULL,
+                      CV.strat = NULL,
+                      CV.user.table = NULL,
+                      CV.do.full.models = TRUE)
+  } else {
+    .fun_testIfIn(TRUE, "names of params.CV", names(params.CV), names.params.CV)
+    
+    ## 1. Check strategy argument -------------------------------------
+    .fun_testIfIn(TRUE, "strategy", params.CV$strategy, c("random", "kfold", "block", "strat", "env", "user.defined"))
+    
+    ## 2.a Check nb.rep / perc argument -------------------------------
+    if (strategy %in% c("random", "kfold")) {
+      .fun_testIfPosInt(TRUE, "nb.rep", params.CV$nb.rep)
+      if (params.CV$nb.rep < 1) { stop("nb.rep must be an integer >= 1") }
+      
+      if (params.CV$strategy == "random") {
+        if (is.null(params.CV$perc)) {
+          stop("perc (or CV.perc) is required when strategy = 'random'")
+        }
+        .fun_testIf01(TRUE, "perc", params.CV$perc)
+        if (params.CV$perc < 0.5) {
+          warning("You chose to allocate more data to validation than to calibration of your model
+                (perc<0.5)\nMake sure you really wanted to do that. \n", immediate. = TRUE)
+        } else if (params.CV$perc == 1) {
+          params.CV$nb.rep <- 0
+          warning(paste0("The models will be evaluated on the calibration data only "
+                         , "(nb.rep=0 and no independent data) \n\t "
+                         , "It could lead to over-optimistic predictive performances.\n")
+                  , immediate. = TRUE)
+        }
+      }
+    }
+    
+    ## 2.b Check k argument -------------------------------------------
+    if (params.CV$strategy %in% c("kfold", "strat", "env")) {
+      .fun_testIfPosInt(TRUE, "k", params.CV$k)
+      if (params.CV$k < 2) { stop("k must be an integer >= 2") }
+    }
+    
+    ## 2.c Check env.var argument -------------------------------------------
+    if (params.CV$strategy %in% c("env")) {
+      if (is.null(env.var)) {
+        env.var <- names(expl.var)
+      } else {
+        .fun_testIfIn(TRUE, "env.var", params.CV$env.var, names(expl.var))
+      }
+    }
+    ## 3. Check balance / strat argument ------------------------------
+    if (params.CV$strategy %in% c("strat", "env")) {
+      .fun_testIfIn(TRUE, "balance", params.CV$balance, c("presences","absences"))
+      
+      if (params.CV$strategy == "strat") {
+        .fun_testIfIn(TRUE, "strat", params.CV$strat, c("x", "y", "both"))
+      }
+    }
+    
+    ## 4. Check user.table argument -----------------------------------
+    if (params.CV$strategy == "user.defined") {
+      if (is.null(params.CV$user.table)) {
+        stop("user.table must be a matrix or a data.frame") 
+      } else {
+        .fun_testIfInherits(TRUE, "user.table", params.CV$user.table, c("matrix", "data.frame"))
+        if (inherits(user.table, 'data.frame')) {
+          params.CV$user.table <- as.matrix(params.CV$user.table)
+        }
+      }
+    }
+  }
+  return(params.CV)
+}
+
+
+check.params.OPT <- function(params.OPT){
+  names.params.OPT <- c("OPT.strategy", "OPT.user.val", "OPT.user.base", "OPT.user")
+  if (missing(params.OPT)){
+    params.OPT <- list(OPT.strategy = 'bigboss',
+                       OPT.user.val = NULL,
+                       OPT.user.base = 'bigboss',
+                       OPT.user = NULL)
+  } else {
+    .fun_testIfIn(TRUE, "names of params.OPT", names(params.OPT), names.params.OPT)
+    
+    .fun_testIfIn(TRUE, "OPT.strategy", params.OPT$OPT.strategy, c("bigboss", "default", "tuned", "user.defined"))
+    
+    if (!is.null(params.OPT$OPT.user)) {
+      .fun_testIfInherits(TRUE, "OPT.user", params.OPT$OPT.user, "BIOMOD.models.options")
+    }
+  } 
+  return(params.OPT)
+}

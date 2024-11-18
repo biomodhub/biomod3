@@ -10,14 +10,14 @@ setClass("MS.models.out",
                         sp.name = 'character',
                         data.type = 'character',
                         expl.var.names = 'character',
-                        summary.models.computed = 'ANY',
+                        models.computed = 'list',
+                        models.failed = 'list',
                         has.evaluation.data = 'logical',
                         scale.models = 'logical'),
          prototype(modeling.id = as.character(format(Sys.time(), "%s")),
                    dir.name = '.',
                    sp.name = '',
                    expl.var.names = '',
-                   summary.models.computed = NULL,
                    has.evaluation.data = FALSE,
                    scale.models = TRUE),
          validity = function(object){ return(TRUE) } )
@@ -42,7 +42,7 @@ setMethod('show', signature('MS.models.out'), function(object) {
   cat("\nSpecies modeled :", object@sp.name, fill = .Options$width)
   cat("\nModeling id :", object@modeling.id, fill = .Options$width)
   cat("\nConsidered variables :", object@expl.var.names, fill = .Options$width)
-  cat("\n\nComputed Models : ", sum(object@summary.models.computed[,"models.computed"]), fill = .Options$width)
+  cat("\n\nComputed Models : ", object@models.computed, fill = .Options$width)
   .bm_cat()
 })
 
@@ -180,9 +180,12 @@ setMethod("get_built_models", "MS.models.out",
           function(obj, full.name = NULL, PA = NULL, run = NULL, algo = NULL)
           { 
             out <- obj@models.computed
-            keep_ind <- .filter_outputs.vec(out, obj.type = "mod", subset.list = list(full.name = full.name, PA = PA
+            for (sp in obj@sp.name){
+              vec <- out[[sp]]
+              keep_ind <- .filter_outputs.vec(vec, obj.type = "mod", subset.list = list(full.name = full.name, PA = PA
                                                                                       , run = run, algo = algo))
-            out <- out[keep_ind]
+              out[[sp]] <- vec[keep_ind]
+            }
             return(out)
           }
 )
