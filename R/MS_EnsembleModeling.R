@@ -141,16 +141,22 @@ MS_EnsembleModeling <- function(ms.mod,
     # 1. Récupération ms.mod 
     bm.mod <- get(load(file.path(ms.mod@dir.name, sp, paste0(sp, ".", ms.mod@modeling.id,".models.out"))))
     
+    em.by.sp <- em.by[[sp]]
     models.chosen.sp <- models.chosen[[sp]]
+    metric.select.sp <- metric.select[[sp]]
+    metric.select.thresh.sp <- metric.select.thresh[[sp]]
+    metric.select.table.sp <- metric.select.table[[sp]]
+    metric.select.dataset.sp <- metric.select.dataset[[sp]]
+    
     # 2. Run MS_EnsembleModeling
     output <- capture.output(em_models <- BIOMOD_EnsembleModeling(bm.mod,
                                                                   models.chosen = models.chosen.sp,
-                                                                  em.by = em.by,
-                                                                  em.algo =em.algo,
-                                                                  metric.select = metric.select,
-                                                                  metric.select.thresh = metric.select.thresh,
-                                                                  metric.select.table = metric.select.table,
-                                                                  metric.select.dataset = metric.select.dataset,
+                                                                  em.by = em.by.sp,
+                                                                  em.algo = em.algo,
+                                                                  metric.select = metric.select.sp,
+                                                                  metric.select.thresh = metric.select.thresh.sp,
+                                                                  metric.select.table = metric.select.table.sp,
+                                                                  metric.select.dataset = metric.select.dataset.sp,
                                                                   metric.eval = metric.eval,
                                                                   var.import = var.import,
                                                                   EMci.alpha = EMci.alpha,
@@ -194,6 +200,7 @@ MS_EnsembleModeling <- function(ms.mod,
     names(models.chosen) <- ms.mod@sp.name
   } else {
     .fun_testIfInherits(TRUE, "models.chosen", models.chosen, "list")
+    .fun_testIfIn(TRUE, "names(models.chosen)", names(models.chosen), ms.mod@sp.name)
   }
   
   # 3. check argument em.algo ----------------------------------------------
@@ -219,30 +226,38 @@ MS_EnsembleModeling <- function(ms.mod,
   
   ## 4. Check metric.select ---------------------------------------------------
   metric.select.user = FALSE
-  if (!is.null(metric.select)) {
-    if (!is.character(metric.select)) {
-      stop("metric.select must be a character vector or NULL")
-    }
-    if ('user.defined' %in% metric.select) {
-      metric.select.user = TRUE
-      if (!is.null(metric.select.table)) {
-        .fun_testIfIn(TRUE, "models.chosen", models.chosen, colnames(metric.select.table))
-        metric.select.table <- metric.select.table[, models.chosen, drop = FALSE]
-        metric.select <- rownames(metric.select.table)
+  if (!is.list(metric.select)){
+    if (!is.null(metric.select)) {
+      if (!is.character(metric.select)) {
+        stop("metric.select must be a character vector or NULL")
+      }
+      if ('user.defined' %in% metric.select) {
+        metric.select.user = TRUE
+        if (!is.null(metric.select.table)) {
+          .fun_testIfIn(TRUE, "models.chosen", models.chosen, colnames(metric.select.table))
+          metric.select.table <- metric.select.table[, models.chosen, drop = FALSE]
+          metric.select <- rownames(metric.select.table)
+        } else {
+          stop("metric.select.table must be a data.frame or NULL")
+        }
       } else {
-        stop("metric.select.table must be a data.frame or NULL")
-      }
-    } else {
-      if ('all' %in% metric.select) {
-        metric.select <- unique(get_evaluations(ms.mod, sp = ms.mod@sp.name[1])$metric.eval)
-      }
-      .fun_testIfIn(TRUE, "metric.select", metric.select, unique(get_evaluations(ms.mod, sp = ms.mod@sp.name[1])$metric.eval))
-      ## Remove MPA from metric.select
-      if ('MPA' %in% metric.select) {
-        metric.select.thresh <- metric.select.thresh[which(metric.select != 'MPA')]
-        metric.select <- metric.select[which(metric.select != 'MPA')]
+        if ('all' %in% metric.select) {
+          metric.select <- unique(get_evaluations(ms.mod, sp = ms.mod@sp.name[1])$metric.eval)
+        }
+        .fun_testIfIn(TRUE, "metric.select", metric.select, unique(get_evaluations(ms.mod, sp = ms.mod@sp.name[1])$metric.eval))
+        ## Remove MPA from metric.select
+        if ('MPA' %in% metric.select) {
+          metric.select.thresh <- metric.select.thresh[which(metric.select != 'MPA')]
+          metric.select <- metric.select[which(metric.select != 'MPA')]
+        }
       }
     }
+    initial.metric.select <- metric.select
+    metric.select <- as.list(rep(metric.select, length(ms.mod@sp.name)))
+    names(metric.select) <- ms.mod@sp.name
+  } else {
+    #.fun_testIfInherits(TRUE, "models.chosen", models.chosen, "list")
+    .fun_testIfIn(TRUE, "names(metric.select)", names(metric.select), ms.mod@sp.name)
   }
   
   ## 5. metric.select.dataset -------------------------------------------------
@@ -259,21 +274,28 @@ MS_EnsembleModeling <- function(ms.mod,
       append(metric.select.dataset.available, "evaluation")
   }
   
-  if (is.null(metric.select.dataset)) {
-    if (has.validation.data) {
-      metric.select.dataset <- "validation"
-      cat("\n  ! Ensemble Models will be filtered and/or weighted using validation dataset (if possible). Please use `metric.select.dataset` for alternative options.")
+  if(!is.list(metric.select.dataset)){
+    if (is.null(metric.select.dataset)) {
+      if (has.validation.data) {
+        metric.select.dataset <- "validation"
+        cat("\n  ! Ensemble Models will be filtered and/or weighted using validation dataset (if possible). Please use `metric.select.dataset` for alternative options.")
+      } else {
+        metric.select.dataset <- "calibration"
+        cat("\n  ! Ensemble Models will be filtered and/or weighted using calibration dataset. Please use `metric.select.dataset` for alternative options.")
+      }
     } else {
-      metric.select.dataset <- "calibration"
-      cat("\n  ! Ensemble Models will be filtered and/or weighted using calibration dataset. Please use `metric.select.dataset` for alternative options.")
+      .fun_testIfIn(TRUE, "metric.select.dataset",
+                    metric.select.dataset, metric.select.dataset.available)
     }
+    metric.select.dataset <- as.list(rep(metric.select.dataset, length(ms.mod@sp.name)))
+    names(metric.select.dataset) <- ms.mod@sp.name
   } else {
-    .fun_testIfIn(TRUE, "metric.select.dataset",
-                  metric.select.dataset, metric.select.dataset.available)
+    .fun_testIfIn(TRUE, "names(metric.select.dataset)", names(metric.select.dataset), ms.mod@sp.name)
   }
   
+  
   ## 6. Check metric.select.thresh --------------------------------------------
-  if (!is.null(metric.select)) {
+  if (!is.null(initial.metric.select)) {
     if (!is.null(metric.select.thresh)) {
       if (!is.numeric(metric.select.thresh)) {
         stop("metric.select.thresh must be NULL or a numeric vector")
@@ -300,8 +322,10 @@ MS_EnsembleModeling <- function(ms.mod,
       cat("\n   ! No metric.select.thresh -> All models will be kept for Ensemble Modeling")
       metric.select.thresh <- rep(0, length(metric.select))
     }
+    metric.select.thresh <- as.list(rep(metric.select.thresh, length(ms.mod@sp.name)))
+    names(metric.select.thresh) <- ms.mod@sp.name
   } else {
-    metric.select <- 'none'
+    .fun_testIfIn(TRUE, "names(metric.select.thresh)", names(metric.select.thresh), ms.mod@sp.name)
   }
   
   
@@ -321,46 +345,67 @@ MS_EnsembleModeling <- function(ms.mod,
   
   
   ## 8. Check selected EM algo ------------------------------------------------
-  
   if (is.null(metric.select) && 
       any(c("committee.averaging", "prob.mean.weight") %in% em.algo)) {
     stop("You must choose metric.select if you want to compute Committee Averaging or Probability Weighted Mean algorithms")
   }
+
   
   ## 8.1 Check alpha for Confident interval
   if ("EMci" %in% em.algo) {
-    .fun_testIfPosNum(TRUE, "EMci.alpha", EMci.alpha)
-    if (EMci.alpha <= 0 | EMci.alpha >= 0.5) {
-      stop("EMci.alpha must be a numeric between 0 and 0.5")
+    if (!is.list(EMci.alpha)){
+      .fun_testIfPosNum(TRUE, "EMci.alpha", EMci.alpha)
+      if (EMci.alpha <= 0 | EMci.alpha >= 0.5) {
+        stop("EMci.alpha must be a numeric between 0 and 0.5")
+      }
+      EMci.alpha <- as.list(rep(EMci.alpha, length(ms.mod@sp.name)))
+      names(EMci.alpha) <- ms.mod@sp.name
+    } else {
+      .fun_testIfIn(TRUE, "names(EMci.alpha)", names(EMci.alpha), ms.mod@sp.name)
     }
   }
   # prob.mean.weight.decay
   ## 8.2 Check decay for wmean
   if ("EMwmean" %in% em.algo) {
-    if ((!is.numeric(EMwmean.decay) &&
-         !is.character(EMwmean.decay) &&
-         !is.function(EMwmean.decay)) ||
-        (is.numeric(EMwmean.decay) && EMwmean.decay < 0) ||
-        (is.character(EMwmean.decay) && EMwmean.decay != 'proportional')) {
-      stop("'EMwmean.decay' should be either 'proportional', a numeric value > 0 or a function")
+    if (!is.list(EMwmean.decay)){
+      if ((!is.numeric(EMwmean.decay) &&
+           !is.character(EMwmean.decay) &&
+           !is.function(EMwmean.decay)) ||
+          (is.numeric(EMwmean.decay) && EMwmean.decay < 0) ||
+          (is.character(EMwmean.decay) && EMwmean.decay != 'proportional')) {
+        stop("'EMwmean.decay' should be either 'proportional', a numeric value > 0 or a function")
+      }
+      EMwmean.decay <- as.list(rep(EMwmean.decay, length(ms.mod@sp.name)))
+      names(EMwmean.decay) <- ms.mod@sp.name
+    } else {
+      .fun_testIfIn(TRUE, "names(EMwmean.decay)", names(EMwmean.decay), ms.mod@sp.name)
     }
   }
   
   ## 9. Check em.by -----------------------------------------------------------
-  if(length(em.by) != 1){
-    stop("\nem.by should be of length 1")
-  }
-  em.by.avail.old <- c("PA_dataset"       = "PA",
-                       "PA_dataset+repet" = "PA+run",
-                       "PA_dataset+algo"  = "PA+algo")
-  em.by.avail <- c('PA', 'algo', 'all', 'PA+run', 'PA+algo')
   
-  if(missing(em.by)){
-    em.by <- "all"
-    cat("\n! `em.by` automatically set to 'all'")
+  if (!is.list(em.by)){
+    if(length(em.by) != 1){
+      stop("\nem.by should be of length 1")
+    }
+    em.by.avail.old <- c("PA_dataset"       = "PA",
+                         "PA_dataset+repet" = "PA+run",
+                         "PA_dataset+algo"  = "PA+algo")
+    em.by.avail <- c('PA', 'algo', 'all', 'PA+run', 'PA+algo')
+    
+    if(missing(em.by)){
+      em.by <- "all"
+      cat("\n! `em.by` automatically set to 'all'")
+    }
+    
+    .fun_testIfIn(TRUE, "em.by", em.by, em.by.avail)
+    em.by <- as.list(rep(em.by, length(ms.mod@sp.name)))
+    names(em.by) <- ms.mod@sp.name
+  } else {
+    .fun_testIfIn(TRUE, "names(em.by)", names(em.by), ms.mod@sp.name)
   }
   
-  .fun_testIfIn(TRUE, "em.by", em.by, em.by.avail)
+  
   
   # # check that repetition are note merged with full models
   # if(any(grepl(pattern = "RUN",  x = models.chosen)) &&

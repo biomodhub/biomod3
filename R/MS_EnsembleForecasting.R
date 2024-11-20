@@ -160,7 +160,6 @@ MS_EnsembleForecasting <- function(ms.mod,
                   sp.name =  ms.mod@sp.name,
                   expl.var.names = ms.mod@expl.var.names,
                   models.projected = models.chosen,
-                  scale.models = ms.mod@scale.models,
                   coord = new.env.xy,
                   data.type = ms.mod@data.type,
                   modeling.id = ms.mod@modeling.id,
@@ -171,7 +170,7 @@ MS_EnsembleForecasting <- function(ms.mod,
   workflow <- foreach(sp = ms.mod@sp.name) %do% {
     cat("\n\t Projection of", sp)
     # 1. Récupération ms.mod 
-    bm.em <- get(load(file.path(ms.mod@dir.name, sp, paste0(sp, ".", ms.mod@modeling.id,"ensemble.models.out"))))
+    bm.em <- get(load(file.path(ms.mod@dir.name, sp, paste0(sp, ".", ms.mod@modeling.id,".ensemble.models.out"))))
     
     models.chosen.sp <- models.chosen[[sp]]
     # 2. Run MS_EnsembleModeling
