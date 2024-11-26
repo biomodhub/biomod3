@@ -6,25 +6,29 @@
 ##' @aliases MS.formated.data-class
 ##' @author Damien Georges
 ##' 
-##' @title \code{BIOMOD_FormatingData()} output object class
+##' @title \code{MS_FormatingData()} output object class
 ##' 
-##' @description Class returned by \code{\link{BIOMOD_FormatingData}}, and used by 
-##' \code{\link{bm_Tuning}}, \code{\link{bm_CrossValidation}} and 
-##' \code{\link{BIOMOD_Modeling}}
+##' @description Class returned by \code{\link{MS_FormatingData}}
+##' \code{\link{MS_Modeling}}
 ##' 
 ##' 
 ##' @param object a \code{\link{MS.formated.data}} object
 ##' 
 ##' @slot data.type a \code{character} corresponding to the data type
 ##' @slot dir.name a \code{character} corresponding to the modeling folder
-##' @slot sp.name a \code{character} corresponding to the species name
+##' @slot ms.project a \code{character} correspondinf to the name of the multispecies project
+##' @slot sp.name a \code{character vector} corresponding to the species name
 ##' @slot coord a 2-columns \code{data.frame} containing the corresponding \code{X} and \code{Y} 
 ##' coordinates
-##' @slot data.species a \code{vector} containing the species observations (\code{0}, \code{1} or 
+##' @slot data.species a \code{data.frame} containing the species observations (\code{0}, \code{1} or 
 ##' \code{NA})
 ##' @slot data.env.var a \code{data.frame} containing explanatory variables
 ##' @slot data.mask a \code{\link[terra:rast]{SpatRaster}} object containing the mask of the 
 ##' studied area
+##' @slot PA.strategy a \code{character vector} corresponding to the pseudo-absence selection strategy
+##' @slot PA.table a \code{list} with the \code{data.frames} containing the corresponding table of selected 
+##' pseudo-absences (indicated by \code{TRUE} or \code{FALSE}) from the \code{pa.tab} list 
+##' element returned by the \code{\link{bm_PseudoAbsences}} function
 ##' @slot has.data.eval a \code{logical} value defining whether evaluation data is given
 ##' @slot has.filter.raster a \code{logical} value defining whether filtering have been done or not
 ##' @slot eval.coord (\emph{optional, default} \code{NULL}) \cr 
@@ -35,13 +39,10 @@
 ##' evaluation data
 ##' @slot eval.data.env.var (\emph{optional, default} \code{NULL}) \cr 
 ##' A \code{data.frame} containing explanatory variables for evaluation data
-##' @slot biomod2.version a \code{character} corresponding to the biomod2 version
+##' @slot biomod3.version a \code{character} corresponding to the biomod3 version
 ##' 
 ##' 
-##' @name MS.formated.data-class
 ##' @rdname MS.formated.data
-##' @importFrom terra rast app is.factor subset extract cellFromXY `add<-` 
-##' classify rasterize values
 ##' @export
 ##' 
 

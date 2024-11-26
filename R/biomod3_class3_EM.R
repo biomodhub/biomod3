@@ -51,7 +51,6 @@
 ##' @family Toolbox objects
 ##' 
 ##' 
-##' @name MS.ensemble.models.out-class
 ##' @rdname MS.ensemble.models.out
 ##' @export
 ##' 

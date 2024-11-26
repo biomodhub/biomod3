@@ -3,6 +3,11 @@
 ## 1. MS.models.out -----------------------------------------------------
 ## -------------------------------------------------------------------------- #
 
+##' @name MS.models.out
+##' @author Hélène Blancheteau
+##' 
+##' @title \code{MS_Modeling()} output object class
+
 setClass("MS.models.out",
          representation(ms.project = 'character',
                         modeling.id = 'character',
@@ -23,10 +28,45 @@ setClass("MS.models.out",
          validity = function(object){ return(TRUE) } )
 
 setClass("BIOMOD.stored.ms.models.out",
-         contains = "BIOMOD.stored.data",
          representation(val = 'MS.models.out'),
          prototype(val = NULL),
          validity = function(object) { return(TRUE) })
+
+
+##' @name getters.out
+##' @aliases get_species_data
+##' @aliases get_eval_data
+##' @aliases get_options
+##' @aliases get_calib_lines
+##' @aliases get_formal_data
+##' @aliases get_projected_models
+##' @aliases free
+##' @aliases get_predictions
+##' @aliases get_kept_models
+##' @aliases get_built_models
+##' @aliases get_evaluations
+##' @aliases get_variables_importance
+##' 
+##' @title Functions to extract informations from \code{\link{MS.models.out}}, 
+##' \code{\link{MS.projection.out}} or \code{\link{MS.ensemble.models.out}} objects
+
+setGeneric("get_species_data", function(obj, ...) { standardGeneric("get_species_data") }) ## 012
+setGeneric("get_eval_data", function(obj, ...) { standardGeneric("get_eval_data") }) ## 012
+
+setGeneric("get_options", function(obj, ...) { standardGeneric("get_options") }) ## A
+setGeneric("get_calib_lines", function(obj, ...) { standardGeneric("get_calib_lines") }) ## A
+
+setGeneric("get_projected_models", function(obj, ...) { standardGeneric("get_projected_models") }) ## B
+setGeneric("free", function(obj, ...) { standardGeneric("free") }) ## B
+
+setGeneric("get_predictions", function(obj, ...) { standardGeneric("get_predictions") }) ## ABC
+
+setGeneric("get_kept_models", function(obj, ...) { standardGeneric("get_kept_models") }) ## C
+
+setGeneric("get_formal_data", function(obj, ...) { standardGeneric("get_formal_data") }) ## AC
+setGeneric("get_built_models", function(obj, ...) { standardGeneric("get_built_models") }) ## AC
+setGeneric("get_evaluations", function(obj, ...) { standardGeneric("get_evaluations") }) ## AC
+setGeneric("get_variables_importance", function(obj, ...) { standardGeneric("get_variables_importance") }) ## AC
 
 
 ## show.MS.models.out ---------------------------------------------------

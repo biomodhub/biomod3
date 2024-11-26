@@ -154,16 +154,6 @@ MS_Modeling <- function(ms.format,
 }
 
 
-# ---------------------------------------------------------------------------- #
-
-.MS_Modeling.prepare.workdir <- function(dir.name, sp.name, modeling.id)
-{
-  cat("\nCreating suitable Workdir...\n")
-  dir.create(file.path(dir.name, sp.name), showWarnings = FALSE, recursive = TRUE)
-  dir.create(file.path(dir.name, sp.name, ".BIOMOD_DATA", modeling.id), showWarnings = FALSE, recursive = TRUE)
-  dir.create(file.path(dir.name, sp.name, "models", modeling.id), showWarnings = FALSE, recursive = TRUE)
-}
-
 
 # ---------------------------------------------------------------------------- #
 
@@ -295,27 +285,5 @@ MS_Modeling <- function(ms.format,
               metric.eval = metric.eval,
               prevalence = prevalence,
               seed.val = seed.val))
-}
-
-
-# ---------------------------------------------------------------------------- #
-
-.MS_Modeling.summary <- function(ms.format, calib.lines, models, models.pa = NULL)
-{
-  cat("\n\n")
-  .bm_cat(paste(ms.format@sp.name, "Modeling Summary"))
-  cat("\n", ncol(ms.format@data.env.var), " environmental variables (", colnames(ms.format@data.env.var), ")")
-  nb.eval.rep <- ncol(calib.lines) / ifelse(inherits(ms.format, "BIOMOD.formated.data.PA"), ncol(ms.format@PA.table), 1)
-  cat("\nNumber of evaluation repetitions :", nb.eval.rep)
-  cat("\nModels selected :", models, "\n")
-  if (is.null(models.pa)) {
-    nb.runs = ncol(calib.lines) * length(models)
-  } else {
-    nb.runs = length(which(
-      sapply(unlist(models.pa), function(x) grepl(colnames(calib.lines), pattern = x))
-    ))
-  }
-  cat("\nTotal number of model runs:", nb.runs, "\n")
-  .bm_cat()
 }
 

@@ -52,7 +52,7 @@
 ##' containing the corresponding \code{X} and \code{Y} coordinates that will be used to evaluate 
 ##' the species distribution model(s) with independent data
 ##' 
-##' @param params a \code{list} with the species names associated to the parameters of PA
+##' @param params.PA a \code{list} with the species names associated to the parameters of PA
 ##' 
 ##' @param filter.raster (\emph{optional, default} \code{FALSE}) \cr 
 ##' If \code{expl.var} is of raster type, a \code{logical} value defining whether \code{resp.var} 
@@ -77,6 +77,7 @@
 ##' 
 ##' 
 ##' @importFrom biomod2 BIOMOD_FormatingData
+##' @importFrom foreach foreach %do%
 ##' 
 ##' @export
 ##' 
@@ -93,7 +94,7 @@ MS_FormatingData <- function(ms.project.name,
                              eval.resp.var = NULL,
                              eval.expl.var = NULL,
                              eval.resp.xy = NULL,
-                             params = NULL, 
+                             params.PA = NULL, 
                              single.formated.data = NULL,
                              ms.formated.data = NULL,
                              filter.raster = FALSE,
@@ -116,7 +117,7 @@ MS_FormatingData <- function(ms.project.name,
   # est ce que je complete 
   new.formated.data <- foreach(sp = resp.name) %do% {
 
-    parameters <- params[[sp]]
+    parameters <- params.PA[[sp]]
     
     output <- capture.output(formated.data <- BIOMOD_FormatingData(dir.name = file.path(dir.name, ms.project.name),
                                                                    resp.var = resp.var[,sp],

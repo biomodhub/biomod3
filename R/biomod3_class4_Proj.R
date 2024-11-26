@@ -61,7 +61,6 @@
 ##' @importFrom graphics layout legend par points polygon text
 ##' @importFrom ggplot2 scale_colour_viridis_c scale_fill_viridis_c
 ##' 
-##' @name MS.projection.out-class
 ##' @rdname MS.projection.out
 ##' @export
 ##' 
@@ -80,7 +79,7 @@ setClass("MS.projection.out",
                         models.out = 'BIOMOD.stored.data',
                         type = 'character',
                         data.type = 'character',
-                        proj.out = 'BIOMOD.stored.data'),
+                        proj.out = 'BIOMOD.stored.ms.models.out'),
          prototype(modeling.id = '',
                    proj.name = '',
                    dir.name = '.',

@@ -4,15 +4,16 @@
 ##' 
 ##' @title Run a range of species distribution models
 ##' 
-##' @description This function allows to calibrate and evaluate a range of modeling techniques 
-##' for a given species distribution. The dataset can be split up in calibration/validation parts,
-##' and the predictive power of the different models can be estimated using a range of evaluation 
-##' metrics (see Details).
+##' @description This function allows to run a workflow for one or several species using biomod2. 
+##' The parameters could be change inside the arguments 'params. 's. 
 ##' 
 ##' 
 ##' @param ms.project.name a \code{character} corresponding to the name of your project for your multispecies modelling
 ##' @param dir.name (\emph{optional, default} \code{.}) \cr
 ##' A \code{character} corresponding to the modeling folder
+##' @param modeling.id a \code{character} corresponding to the name (ID) of the simulation set 
+##' (\emph{a random number by default})
+##' 
 ##' @param resp.name a \code{character vector} corresponding to the species name
 ##' 
 ##' @param resp.var a \code{vector} or a \code{\link[terra:vect]{SpatVector}} containing your response variable (See Details).
@@ -53,6 +54,34 @@
 ##' containing the corresponding \code{X} and \code{Y} coordinates that will be used to evaluate 
 ##' the species distribution model(s) with independent data
 ##' 
+##' @param models a \code{vector} containing model names to be computed, must be among 
+##' \code{ANN}, \code{CTA}, \code{FDA}, \code{GAM}, \code{GBM}, \code{GLM}, \code{MARS}, 
+##' \code{MAXENT}, \code{MAXNET}, \code{RF}, \code{RFd}, \code{SRE}, \code{XGBOOST}
+##' @param models.pa (\emph{optional, default} \code{NULL}) \cr 
+##' A \code{list} containing for each model a \code{vector} defining which pseudo-absence datasets 
+##' are to be used, must be among \code{colnames(bm.format@PA.table)}
+##' @param weights (\emph{optional, default} \code{NULL}) \cr 
+##' A \code{vector} of \code{numeric} values corresponding to observation weights (one per 
+##' observation, see Details)
+##' @param prevalence (\emph{optional, default} \code{NULL}) \cr 
+##' A \code{numeric} between \code{0} and \code{1} corresponding to the species prevalence to 
+##' build '\emph{weighted response weights}' (see Details)
+##' @param metric.eval a \code{vector} containing evaluation metric names to be used, must 
+##' be among \code{ROC}, \code{TSS}, \code{KAPPA}, \code{ACCURACY}, \code{BIAS}, \code{POD}, 
+##' \code{FAR}, \code{POFD}, \code{SR}, \code{CSI}, \code{ETS}, \code{OR}, 
+##' \code{ORSS}, \code{BOYCE}, \code{MPA}, \code{RMSE}, \code{MAE}, \code{MSE}, \code{Rsquared}, \code{Rsquared_aj},
+##' \code{Max_error}, \code{Accuracy}, \code{Recall}, \code{Precision}, \code{F1}
+##' @param var.import (\emph{optional, default} \code{NULL}) \cr 
+##' An \code{integer} corresponding to the number of permutations to be done for each variable to 
+##' estimate variable importance
+##' @param scale.models (\emph{optional, default} \code{FALSE}) \cr 
+##' A \code{logical} value defining whether all models predictions should be scaled with a 
+##' binomial GLM or not
+##' 
+##' @param em.algo a \code{vector} corresponding to the ensemble models that will be computed, 
+##' must be among \code{'EMmean'}, \code{'EMmedian'}, \code{'EMcv'}, \code{'EMci'}, 
+##' \code{'EMca'}, \code{'EMwmean'}
+##' 
 ##' @param params.PA a \code{list} with the species names associated to the parameters of PA
 ##' @param params.CV a \code{list} with the species names associated to the parameters of Cross-Validation. See BIOMOD_Modeling
 ##' @param params.OPT a \code{list} with the species names associated to the options of the algorithms. See BIOMOD_Modeling
@@ -60,6 +89,9 @@
 ##' @param filter.raster (\emph{optional, default} \code{FALSE}) \cr 
 ##' If \code{expl.var} is of raster type, a \code{logical} value defining whether \code{resp.var} 
 ##' is to be filtered when several points occur in the same raster cell
+##' @param nb.cpu (\emph{optional, default} \code{1}) \cr 
+##' An \code{integer} value corresponding to the number of computing resources to be used to 
+##' parallelize the single models computation
 ##' @param seed.val (\emph{optional, default} \code{NULL}) \cr 
 ##' An \code{integer} value corresponding to the new seed value to be set
 ##' 

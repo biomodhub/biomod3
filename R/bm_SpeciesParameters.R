@@ -8,6 +8,119 @@
 ##' 
 ##' @param resp.name a \code{character vector} of your species name.
 ##' 
+##' @param PA.nb.rep (\emph{optional, default} \code{0}) \cr 
+##' If pseudo-absence selection, an \code{integer} corresponding to the number of sets 
+##' (repetitions) of pseudo-absence points that will be drawn
+##' @param PA.strategy (\emph{optional, default} \code{NULL}) \cr 
+##' If pseudo-absence selection, a \code{character} defining the strategy that will be used to 
+##' select the pseudo-absence points. Must be \code{random}, \code{sre}, \code{disk} or 
+##' \code{user.defined} (see Details)
+##' @param PA.nb.absences (\emph{optional, default} \code{0}) \cr 
+##' If pseudo-absence selection, and \code{PA.strategy = 'random'} or \code{PA.strategy = 'sre'} 
+##' or \code{PA.strategy = 'disk'}, an \code{integer} corresponding to the number of pseudo-absence 
+##' points that will be selected for each pseudo-absence repetition (true absences included). \cr
+##' It can also be a \code{vector} of the same length as \code{PA.nb.rep} containing \code{integer} 
+##' values corresponding to the different numbers of pseudo-absences to be selected
+##' @param PA.sre.quant (\emph{optional, default} \code{0}) \cr 
+##' If pseudo-absence selection and \code{PA.strategy = 'sre'}, a \code{numeric} between \code{0} 
+##' and \code{0.5} defining the half-quantile used to make the \code{sre} pseudo-absence selection 
+##' (see Details)
+##' @param PA.dist.min (\emph{optional, default} \code{0}) \cr 
+##' If pseudo-absence selection and \code{PA.strategy = 'disk'}, a \code{numeric} defining the 
+##' minimal distance to presence points used to make the \code{disk} pseudo-absence selection 
+##' (in meters, see Details)
+##' @param PA.dist.max (\emph{optional, default} \code{0}) \cr 
+##' If pseudo-absence selection and \code{PA.strategy = 'disk'}, a \code{numeric} defining the 
+##' maximal distance to presence points used to make the \code{disk} pseudo-absence selection 
+##' (in meters, see Details)
+##' @param PA.fact.aggr (\emph{optional, default} \code{NULL}) \cr
+##' If \code{strategy = 'random'} or \code{strategy = 'disk'}, a \code{integer} defining the factor of aggregation to reduce the resolution
+##' @param PA.user.table (\emph{optional, default} \code{NULL}) \cr 
+##' If pseudo-absence selection and \code{PA.strategy = 'user.defined'}, a \code{matrix} or 
+##' \code{data.frame} with as many rows as \code{resp.var} values, as many columns as 
+##' \code{PA.nb.rep}, and containing \code{TRUE} or \code{FALSE} values defining which points 
+##' will be used to build the species distribution model(s) for each repetition (see Details)
+##' 
+##' @param CV.strategy a \code{character} corresponding to the cross-validation selection strategy, 
+##' must be among \code{random}, \code{kfold}, \code{block}, \code{strat}, \code{env} or 
+##' \code{user.defined}
+##' @param CV.nb.rep (\emph{optional, default} \code{0}) \cr
+##' If \code{strategy = 'random'} or \code{strategy = 'kfold'}, an \code{integer} corresponding 
+##' to the number of sets (repetitions) of cross-validation points that will be drawn
+##' @param CV.perc (\emph{optional, default} \code{0}) \cr
+##' If \code{strategy = 'random'}, a \code{numeric} between \code{0} and \code{1} defining the 
+##' percentage of data that will be kept for calibration
+##' @param CV.k (\emph{optional, default} \code{0}) \cr
+##' If \code{strategy = 'kfold'} or \code{strategy = 'strat'} or \code{strategy = 'env'}, an 
+##' \code{integer} corresponding to the number of partitions 
+##' @param CV.balance (\emph{optional, default} \code{'presences'}) \cr
+##' If \code{strategy = 'strat'} or \code{strategy = 'env'}, a \code{character} corresponding 
+##' to how data will be balanced between partitions, must be either \code{presences} or
+##' \code{absences} 
+##' @param CV.env.var (\emph{optional}) \cr If \code{strategy = 'env'}, a \code{character} 
+##' corresponding to the environmental variables used to build the partition. \code{k} partitions 
+##' will be built for each environmental variables. By default the function uses all 
+##' environmental variables available.
+##' @param CV.strat (\emph{optional, default} \code{'both'}) \cr
+##' If \code{strategy = 'env'}, a \code{character} corresponding to how data will partitioned 
+##' along gradient, must be among \code{x}, \code{y}, \code{both}
+##' @param CV.user.table (\emph{optional, default} \code{NULL}) \cr
+##' If \code{strategy = 'user.defined'}, a \code{matrix} or \code{data.frame} defining for each 
+##' repetition (in columns) which observation lines should be used for models calibration 
+##' (\code{TRUE}) and validation (\code{FALSE})
+##' @param CV.do.full.models (\emph{optional, default} \code{TRUE}) \cr  
+##' A \code{logical} value defining whether models should be also calibrated and validated over 
+##' the whole dataset (and pseudo-absence datasets) or not
+##' 
+##' @param OPT.strategy a \code{character} corresponding to the method to select models' 
+##' parameters values, must be either \code{default}, \code{bigboss}, \code{user.defined}, 
+##' \code{tuned}
+##' @param OPT.user.val (\emph{optional, default} \code{NULL}) \cr
+##' A \code{list} containing parameters values for some (all) models
+##' @param OPT.user.base (\emph{optional, default} \code{bigboss}) \cr A character, 
+##' \code{default} or \code{bigboss} used when \code{OPT.strategy = 'user.defined'}. 
+##' It sets the bases of parameters to be modified by user defined values.
+##' @param OPT.user (\emph{optional, default} \code{TRUE}) \cr  
+##' A \code{\link{BIOMOD.models.options}} object returned by the \code{\link{bm_ModelingOptions}} 
+##' function
+##' 
+##' @param models.chosen a \code{vector} containing model names to be kept, must be either 
+##' \code{all} or a sub-selection of model names that can be obtained with the 
+##' \code{\link{get_built_models}} function
+##' @param em.by a \code{character} corresponding to the way kept models will be combined to build 
+##' the ensemble models, must be among \code{all}, \code{algo}, \code{PA}, \code{PA+algo}, 
+##' \code{PA+run}
+##' @param metric.select a \code{vector} containing evaluation metric names to be used together with 
+##' \code{metric.select.thresh} to exclude single models based on their evaluation scores 
+##' (for ensemble methods like probability weighted mean or committee averaging). Must be among  
+##' \code{all} (same evaluation metrics than those of \code{bm.mod}), \code{user.defined} 
+##' (and defined through \code{metric.select.table}) or \code{POD}, \code{FAR}, \code{POFD}, 
+##' \code{SR}, \code{ACCURACY}, \code{BIAS}, \code{ROC}, \code{TSS}, \code{KAPPA}, \code{OR}, 
+##' \code{ORSS}, \code{CSI}, \code{ETS}, \code{BOYCE}, \code{MPA}, \code{RMSE}, \code{MAE}, 
+##' \code{MSE}, \code{Rsquared}, \code{Rsquared_aj}, \code{Max_error}, \code{Accuracy}, \code{Recall},
+##' \code{Precision}, \code{F1}
+##' @param metric.select.thresh (\emph{optional, default} \code{NULL}) \cr 
+##' A \code{vector} of \code{numeric} values corresponding to the minimum scores (one for each 
+##' \code{metric.select}) below which single models will be excluded from the ensemble model 
+##' building
+##' @param metric.select.table (\emph{optional, default} \code{NULL}) \cr If 
+##' \code{metric.select = 'user.defined'}, a \code{data.frame} containing evaluation scores 
+##' calculated for each single models and that will be compared to \code{metric.select.thresh} 
+##' values to exclude some of them from the ensemble model building, with \code{metric.select} 
+##' rownames, and \code{models.chosen} colnames
+##' @param metric.select.dataset (\emph{optional, default} \code{'validation'} 
+##' \emph{if possible}). A character determining which dataset should be used to filter and/or 
+##' weigh the ensemble models should be among 'evaluation', 'validation' or 'calibration'.
+##' @param EMci.alpha (\emph{optional, default} \code{0.05}) \cr 
+##' A \code{numeric} value corresponding to the significance level to estimate confidence interval
+##' @param EMwmean.decay (\emph{optional, default} \code{proportional}) \cr A
+##' value defining the relative importance of the weights (if \code{'EMwmean'}
+##' was given to argument \code{em.algo}). A high value will strongly
+##' discriminate \emph{good} models from the \emph{bad} ones (see Details),
+##' while \code{proportional} will attribute weights proportionally to the
+##' models evaluation scores
+##'   
+##' 
 ##' @return
 ##' 
 ##' A \code{list} with the differents set of parameters fo all the species of resp.name :
@@ -43,7 +156,7 @@ bm_SpeciesParameters <- function(resp.name,
   }
   
   ## 5. Check dist.min and dist.max arguments ---------------------------------
-  if (PA.strategy == 'disk') {
+  if (!is.null(PA.strategy) && PA.strategy == 'disk') {
     if (!is.null(PA.dist.min) && PA.dist.min < 0) {
       dist.min <- 0
     }
@@ -56,7 +169,7 @@ bm_SpeciesParameters <- function(resp.name,
   }
   
   ## 6. Check nb.absences argument --------------------------------------------
-  if (PA.strategy != "user.defined") {
+  if (!is.null(PA.strategy) && PA.strategy != "user.defined") {
     if (is.null(PA.nb.absences)) {
       stop("You must give the number of pseudo absences you want")
     } else {
@@ -71,7 +184,7 @@ bm_SpeciesParameters <- function(resp.name,
   }
   
   ## 7. Check user.table argument --------------------------------------------
-  if (PA.strategy == "user.defined") {
+  if (!is.null(PA.strategy) && PA.strategy == "user.defined") {
     if (is.null(PA.user.table)) {
       stop("You must give a table defining the pseudo absences you want")
     } else {
@@ -183,6 +296,7 @@ bm_SpeciesParameters <- function(resp.name,
     em.by <- "all"
     cat("\n \t\t! `em.by` automatically set to 'all'")
   }
+
   .fun_testIfIn(TRUE, "em.by", em.by, em.by.avail)
   
   params.EM <- list("models.chosen" = models.chosen, "em.by" = em.by, 
