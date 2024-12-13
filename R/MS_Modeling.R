@@ -149,6 +149,12 @@ MS_Modeling <- function(ms.format,
     MSmodels@models.failed[[sp]] = sfd_models@models.failed
   }
   
+  ## SAVE MODEL OBJECT ON HARD DRIVE ----------------------------
+  name.OUT = paste0(ms.format@ms.project, '.', modeling.id, '.MS.models.out')
+  MSmodels@link <- file.path(dir.name, name.OUT)
+  assign(x = name.OUT, value = MSmodels)
+  save(list = name.OUT, file = MSmodels@link)
+  
   .bm_cat("Done")
   return(MSmodels)
 }

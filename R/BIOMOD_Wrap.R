@@ -194,6 +194,8 @@ setMethod(f= "BIOMOD_Wrap", signature(ms.project.name = "missing"), function(ms.
   )
   for (argi in names(args)) { assign(x = argi, value = args[[argi]]) }
   rm(args)
+  
+  cat("\n\t > Formating Data")
   output <- capture.output(formated.data <- BIOMOD_FormatingData(dir.name = dir.name,
                                                                  resp.var = resp.var,
                                                                  expl.var = expl.var,
@@ -214,6 +216,7 @@ setMethod(f= "BIOMOD_Wrap", signature(ms.project.name = "missing"), function(ms.
                                                                  seed.val = NULL,
                                                                  filter.raster = filter.raster))
   
+  cat("\n\t > Single Models")
   output <- capture.output(single.models <- BIOMOD_Modeling(formated.data,
                                                          modeling.id = modeling.id,
                                                          models = models,
@@ -238,6 +241,7 @@ setMethod(f= "BIOMOD_Wrap", signature(ms.project.name = "missing"), function(ms.
                                                          nb.cpu = nb.cpu,
                                                          seed.val = NULL))
   
+  cat("\n\t > Ensemble Models")
   output <- capture.output(em.models <- BIOMOD_EnsembleModeling(single.models,
                                                                 models.chosen = params.EM$models.chosen,
                                                                 em.by = params.EM$em.by,
@@ -682,7 +686,10 @@ check.params.EM <- function(params.EM){
 .inversion_species_params <- function(liste){
   names_liste <- names(liste)
   names_arguments <- names(unlist(liste))
-  names_arguments <- unique(sapply(names_arguments, function(x){unlist(strsplit(x,".", fixed = T))[2]}))
+  for (n in names_liste){
+    names_arguments <- sub(paste0(n,"."), "",names_arguments)
+  }
+  names_arguments <- unique(names_arguments)
   new <- list()
   for (a in names_arguments){
     list_a <- list()
