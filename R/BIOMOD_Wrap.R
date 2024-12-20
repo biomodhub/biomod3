@@ -259,11 +259,16 @@ setMethod(f= "BIOMOD_Wrap", signature(ms.project.name = "missing"), function(ms.
                                                                 do.progress = FALSE))
   
   ## laisser les messages ?!?! Rajouter quelques messages ? 
+  # save sur un fichier texte et donner le lien
   
+  wrap <- new("BIOMOD.wrap.out",
+              formated.data = formated.data,
+              single.models = single.models,
+              ensemble.models = em.models,
+              output = "link")
   .bm_cat("Done")
-  return(list("formated.data" = formated.data,
-              "single.models" = single.models,
-              "ensemble.models" = em.models))
+  
+  return(wrap)
 } )
 
 #======================================================================================================
