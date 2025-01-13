@@ -115,19 +115,22 @@ BIOMOD_ProjectionWrap <- function(bm.wrap,
                   proj.name = proj.name,
                   dir.name = bm.wrap@formated.data@dir.name,
                   sp.name =  bm.wrap@formated.data@sp.name,
-                  expl.var.names = bm.wrap@formated.data@expl.var.names,
+                  expl.var.names = bm.wrap@single.models@expl.var.names,
                   #models.projected = models.chosen,
                   scale.models = bm.wrap@single.models@scale.models,
                   coord = new.env.xy,
                   data.type = bm.wrap@single.models@data.type,
-                  modeling.id = bm.wrap@single.models@modeling.id,
-                  type = "wrap")
+                  modeling.id = bm.wrap@single.models@modeling.id)
   
   
   cat("\n")
   cat("\n\t Projection of single models")
+  
+  models.chosen.single <- "all"
+  models.chosen.ens <- "all"
 
-  output <- capture.output(proj_single <- BIOMOD_Projection(bm.wrap@single.models,
+  # output <- capture.output(
+    proj_single <- BIOMOD_Projection(bm.wrap@single.models,
                                                         proj.name = proj.name,
                                                         new.env = new.env,
                                                         new.env.xy = new.env.xy,
@@ -137,11 +140,13 @@ BIOMOD_ProjectionWrap <- function(bm.wrap,
                                                         compress = compress,
                                                         build.clamping.mask = build.clamping.mask,
                                                         nb.cpu = nb.cpu,
-                                                        digits = digits))
+                                                        digits = digits)
+  # )
   
   cat("\n\t Projection of ensemble models")
   
-  output <- capture.output(proj_ens <- BIOMOD_Projection(bm.wrap@ensemble.models,
+  # output <- capture.output(
+    proj_ens <- BIOMOD_EnsembleForecasting(bm.wrap@ensemble.models,
                                                             proj.name = proj.name,
                                                             new.env = new.env,
                                                             new.env.xy = new.env.xy,
@@ -151,16 +156,25 @@ BIOMOD_ProjectionWrap <- function(bm.wrap,
                                                             compress = compress,
                                                             build.clamping.mask = build.clamping.mask,
                                                             nb.cpu = nb.cpu,
-                                                            digits = digits))
+                                                            digits = digits)
+  # )
   
   
     
-  
+  proj_out@type <- proj_single@type
   proj_out@models.projected <- c(proj_single@models.projected, proj_ens@models.projected)
-  # proj_out@models.out <- fusion !!!!
-  # proj_out@proj.out <- fusion !!!
+  proj_out@models.out <- proj_single@models.out
+  proj_out@models.out@link <- c(proj_single@models.out@link, proj_ens@models.out@link)
+  proj_out@proj.out <- proj_single@proj.out
+  if (proj_out@type == "SpatRaster"){
+    proj_out@proj.out@link <- c(proj_single@proj.out@link, proj_ens@proj.out@link)
+    proj_out@proj.out@val <- wrap(c(unwrap(proj_single@proj.out@val), unwrap(proj_ens@proj.out@val)))
+  } else {
+    proj_out@proj.out@val <- dplyr::bind_rows(proj_single@proj.out@val,proj_ens@proj.out@val)
+  }
   
-  .bm_cat("Done")
+  
+  .bm_cat("Done") 
   return(proj_out)
 }
 
@@ -183,7 +197,7 @@ BIOMOD_ProjectionWrap <- function(bm.wrap,
   .fun_testIfInherits(TRUE, "new.env", new.env, c('matrix', 'data.frame', 'SpatRaster','Raster'))
   
   if (inherits(new.env, 'matrix')) {
-    if (any(sapply(get_formal_data(bm.wrap, sp = bm.wrap@sp.name[1], "expl.var"), is.factor))) {
+    if (any(sapply(get_formal_data(bm.wrap@formated.data, "expl.var"), is.factor))) {
       stop("new.env cannot be given as matrix when model involves categorical variables")
     }
     new.env <- data.frame(new.env)
@@ -196,7 +210,7 @@ BIOMOD_ProjectionWrap <- function(bm.wrap,
     # conversion into SpatRaster
     if (any(raster::is.factor(new.env))) {
       new.env <- .categorical_stack_to_terra(raster::stack(new.env),
-                                             expected_levels = head(get_formal_data(bm.wrap, sp = bm.wrap@sp.name[1], subinfo = "expl.var"))
+                                             expected_levels = head(get_formal_data(bm.wrap@formated.data, subinfo = "expl.var"))
       )
     } else {
       new.env <- rast(new.env)
@@ -204,19 +218,19 @@ BIOMOD_ProjectionWrap <- function(bm.wrap,
   }
   
   if (inherits(new.env, 'SpatRaster')) {
-    .fun_testIfIn(TRUE, "names(new.env)", names(new.env), bm.wrap@expl.var.names, exact = TRUE)
-    new.env <- new.env[[bm.wrap@expl.var.names]]
+    .fun_testIfIn(TRUE, "names(new.env)", names(new.env), bm.wrap@single.models@expl.var.names, exact = TRUE)
+    new.env <- new.env[[bm.wrap@single.models@expl.var.names]]
     new.env.mask <- .get_data_mask(new.env, value.out = 1)
     new.env <- mask(new.env, new.env.mask)
   } else {
-    .fun_testIfIn(TRUE, "colnames(new.env)", colnames(new.env), bm.wrap@expl.var.names, exact = TRUE)
-    new.env <- new.env[ , bm.wrap@expl.var.names, drop = FALSE]
+    .fun_testIfIn(TRUE, "colnames(new.env)", colnames(new.env), bm.wrap@single.models@expl.var.names, exact = TRUE)
+    new.env <- new.env[ , bm.wrap@single.models@expl.var.names, drop = FALSE]
   }
   
   which.factor <- which(sapply(new.env, is.factor))
   if (length(which.factor) > 0) {
     new.env <- .check_env_levels(new.env, 
-                                 expected_levels = head(get_formal_data(bm.wrap, sp = bm.wrap@sp.name[1], subinfo = "expl.var")))
+                                 expected_levels = head(get_formal_data(bm.wrap@formated.data, subinfo = "expl.var")))
   }
   
   ## 4. Check new.env.xy ------------------------------------------------------
@@ -230,8 +244,8 @@ BIOMOD_ProjectionWrap <- function(bm.wrap,
   }
   ## 5. Check models.chosen ---------------------------------------------------
   if ( is.null(models.chosen) | (length(models.chosen) == 1 && models.chosen[1] == 'all')) {
-    models.chosen <- as.list(rep("all", length(bm.wrap@sp.name)))
-    names(models.chosen) <- bm.wrap@sp.name
+    models.chosen <- as.list(rep("all", length(bm.wrap@formated.data@sp.name)))
+    names(models.chosen) <- bm.wrap@formated.data@sp.name
   } else {
     .fun_testIfInherits(TRUE, "models.chosen", models.chosen, "list")
   }
@@ -242,12 +256,12 @@ BIOMOD_ProjectionWrap <- function(bm.wrap,
   
   ## 6. Check metric.binary & metric.filter -----------------------------------
   if (!is.null(metric.binary) | !is.null(metric.filter)) {
-    if ( bm.wrap@data.type != "binary"){
-      cat ("No metric.binary or metric.filter are needed with",bm.wrap@data.type, "data")
+    if ( bm.wrap@formated.data@data.type != "binary"){
+      cat ("No metric.binary or metric.filter are needed with", bm.wrap@formated.data@data.type, "data")
       metric.binary <- NULL
       metric.filter <- NULL
     } else {
-      models.evaluation <- get_evaluations(bm.wrap, sp = bm.wrap@sp.name[1])
+      models.evaluation <- get_evaluations(bm.wrap@single.models)
       if (is.null(models.evaluation)) {
         warning("Binary and/or Filtered transformations of projection not ran because of models evaluation information missing")
       } else {
@@ -317,7 +331,7 @@ BIOMOD_ProjectionWrap <- function(bm.wrap,
   ## 10.on_0_1000 --------------------------------
   
   on_0_1000 <- ifelse(is.null(args$on_0_1000), TRUE, args$on_0_1000)
-  if (bm.wrap@data.type %in% c("count","abundance","ordinal")) {on_0_1000 <- FALSE}
+  if (bm.wrap@formated.data@data.type %in% c("count","abundance","ordinal")) {on_0_1000 <- FALSE}
   
   ## 11.Check overwrite
   overwrite <- ifelse(is.null(args$overwrite), ifelse(do.stack, TRUE, FALSE), args$overwrite)

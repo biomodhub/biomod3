@@ -196,7 +196,8 @@ setMethod(f= "BIOMOD_Wrap", signature(ms.project.name = "missing"), function(ms.
   rm(args)
   
   cat("\n\t > Formating Data")
-  output <- capture.output(formated.data <- BIOMOD_FormatingData(dir.name = dir.name,
+  #output <- capture.output(
+    formated.data <- BIOMOD_FormatingData(dir.name = dir.name,
                                                                  resp.var = resp.var,
                                                                  expl.var = expl.var,
                                                                  resp.xy = resp.xy,
@@ -214,10 +215,12 @@ setMethod(f= "BIOMOD_Wrap", signature(ms.project.name = "missing"), function(ms.
                                                                  PA.user.table = params.PA$PA.user.table,
                                                                  na.rm = T,
                                                                  seed.val = NULL,
-                                                                 filter.raster = filter.raster))
+                                                                 filter.raster = filter.raster)
+   # )
   
   cat("\n\t > Single Models")
-  output <- capture.output(single.models <- BIOMOD_Modeling(formated.data,
+  #output <- capture.output(
+    single.models <- BIOMOD_Modeling(formated.data,
                                                          modeling.id = modeling.id,
                                                          models = models,
                                                          CV.strategy = params.CV$CV.strategy,
@@ -239,10 +242,12 @@ setMethod(f= "BIOMOD_Wrap", signature(ms.project.name = "missing"), function(ms.
                                                          var.import = var.import,
                                                          scale.models = scale.models,
                                                          nb.cpu = nb.cpu,
-                                                         seed.val = NULL))
+                                                         seed.val = NULL)
+  # )
   
   cat("\n\t > Ensemble Models")
-  output <- capture.output(em.models <- BIOMOD_EnsembleModeling(single.models,
+  #output <- capture.output(
+    em.models <- BIOMOD_EnsembleModeling(single.models,
                                                                 models.chosen = params.EM$models.chosen,
                                                                 em.by = params.EM$em.by,
                                                                 em.algo = em.algo,
@@ -256,7 +261,8 @@ setMethod(f= "BIOMOD_Wrap", signature(ms.project.name = "missing"), function(ms.
                                                                 EMwmean.decay = params.EM$EMwmean.decay,
                                                                 nb.cpu = nb.cpu,
                                                                 seed.val = NULL,
-                                                                do.progress = FALSE))
+                                                                do.progress = FALSE)
+  # )
   
   ## laisser les messages ?!?! Rajouter quelques messages ? 
   # save sur un fichier texte et donner le lien
@@ -266,7 +272,7 @@ setMethod(f= "BIOMOD_Wrap", signature(ms.project.name = "missing"), function(ms.
               single.models = single.models,
               ensemble.models = em.models,
               output = "link")
-  .bm_cat("Done")
+  .bm_cat("Done") #to remove ? 
   
   return(wrap)
 } )
