@@ -143,6 +143,61 @@ A \code{\link{MS.models.out}} object acting as a proxi for the created \code{BIO
 This function allows to run a workflow for one or several species using biomod2.
 The parameters could be change inside the arguments 'params. 's.
 }
+\examples{
+library(terra)
+library(biomod2)
+
+# Load species occurrences (6 species available)
+data(DataSpecies)
+head(DataSpecies)
+
+# Select the name of the studied species
+myRespName <- 'GuloGulo'
+
+# Get corresponding presence/absence data
+myResp <- as.numeric(DataSpecies[, myRespName])
+
+# Get corresponding XY coordinates
+myRespXY <- DataSpecies[, c('X_WGS84', 'Y_WGS84')]
+
+# Load environmental variables extracted from BIOCLIM (bio_3, bio_4, bio_7, bio_11 & bio_12)
+data(bioclim_current)
+myExpl <- terra::rast(bioclim_current)
+
+\dontshow{
+  myExtent <- terra::ext(0,30,45,70)
+  myExpl <- terra::crop(myExpl, myExtent)
+}
+
+# ---------------------------------------------------------------#
+# Data formating, modeling and ensemble modeling in one workflow
+myWrap <- BIOMOD_Wrap(modeling.id = "Example",
+                      data.type = "binary",
+                      resp.name = myRespName,
+                      resp.var = myResp,
+                      resp.xy = myRespXY,
+                      expl.var = myExpl,
+                      models = c('RF', 'GLM'),
+                      metric.eval = c("TSS", "ROC"),
+                      params.CV = list(CV.strategy = 'random',
+                                       CV.nb.rep = 3,
+                                       CV.perc = 0.7),
+                      em.algo = c('EMmean', 'EMca'),
+                      params.EM = list(models.chosen = 'all',
+                                       em.by = 'all',
+                                       metric.select = 'TSS',
+                                       metric.select.thresh = 0.6),
+                      var.import = 2,
+                      seed.val = 42)
+
+myWrap
+
+\dontshow{
+  unlink('GuloGulo', recursive = TRUE)
+}
+
+
+}
 \author{
 Helene Blancheteau
 }

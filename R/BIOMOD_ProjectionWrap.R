@@ -78,11 +78,55 @@
 ##'   the \code{proj.name} folder
 ##' }
 ##' 
+##' @examples
+##' library(terra)
+##' library(biomod2)
+##'
+##' # Load species occurrences (6 species available)
+##' data(DataSpecies)
+##' myRespName <- 'GuloGulo'
+##' myResp <- as.numeric(DataSpecies[, myRespName])
+##' myRespXY <- DataSpecies[, c('X_WGS84', 'Y_WGS84')]
 ##' 
+##' # Load environmental variables extracted from BIOCLIM (bio_3, bio_4, bio_7, bio_11 & bio_12)
+##' data(bioclim_current)
+##' myExpl <- terra::rast(bioclim_current)
 ##' 
+##' \dontshow{
+##'   myExtent <- terra::ext(0,30,45,70)
+##'   myExpl <- terra::crop(myExpl, myExtent)
+##' }
+##' # ---------------------------------------------------------------#
+##' # Data formating, modeling and ensemble modeling in one workflow
+##' myWrap <- BIOMOD_Wrap(modeling.id = "Example",
+##'                       data.type = "binary",
+##'                       resp.name = myRespName,
+##'                       resp.var = myResp,
+##'                       resp.xy = myRespXY,
+##'                       expl.var = myExpl,
+##'                       models = c('RF', 'GLM'),
+##'                       metric.eval = c("TSS", "ROC"),
+##'                       params.CV = list(CV.strategy = 'random',
+##'                                        CV.nb.rep = 3,
+##'                                        CV.perc = 0.7),
+##'                       em.algo = c('EMmean', 'EMca'),
+##'                       params.EM = list(models.chosen = 'all',
+##'                                        em.by = 'all',
+##'                                        metric.select = 'TSS',
+##'                                        metric.select.thresh = 0.6),
+##'                       var.import = 2,
+##'                       seed.val = 42)
 ##' 
-##' @keywords models projection
+##' myProjections <- BIOMOD_ProjectionWrap(bm.wrap = myWrap,
+##'                                        proj.name = "Current",
+##'                                        new.env = myExpl,
+##'                                        models.chosen = 'all')
+##' # plot(myProjections)
+##' \dontshow{
+##'   unlink('GuloGulo', recursive = TRUE)
+##' }
 ##' 
+##' @importFrom biomod2 BIOMOD_Projection BIOMOD_EnsembleForecasting 
 ##' @export
 ##' 
 ##' 
@@ -101,7 +145,6 @@ BIOMOD_ProjectionWrap <- function(bm.wrap,
                               nb.cpu = 1,
                               seed.val = NULL,
                               ...) {
-  .bm_cat("Do Single Models Projection")
   
   ## 0. Check arguments ---------------------------------------------------------------------------
   args <- .BIOMOD_ProjectionWrap.check.args(bm.wrap, proj.name, new.env, new.env.xy
@@ -126,8 +169,6 @@ BIOMOD_ProjectionWrap <- function(bm.wrap,
   cat("\n")
   cat("\n\t Projection of single models")
   
-  models.chosen.single <- "all"
-  models.chosen.ens <- "all"
 
   # output <- capture.output(
     proj_single <- BIOMOD_Projection(bm.wrap@single.models,
@@ -174,7 +215,7 @@ BIOMOD_ProjectionWrap <- function(bm.wrap,
   }
   
   
-  .bm_cat("Done") 
+  #.bm_cat("Done") 
   return(proj_out)
 }
 
@@ -243,14 +284,12 @@ BIOMOD_ProjectionWrap <- function(bm.wrap,
     new.env.xy = data.frame()
   }
   ## 5. Check models.chosen ---------------------------------------------------
-  if ( is.null(models.chosen) | (length(models.chosen) == 1 && models.chosen[1] == 'all')) {
-    models.chosen <- as.list(rep("all", length(bm.wrap@formated.data@sp.name)))
-    names(models.chosen) <- bm.wrap@formated.data@sp.name
+  if (length(models.chosen) == 1 && models.chosen == 'all') {
+    models.chosen.single <- "all"
+    models.chosen.ens <- "all"
   } else {
-    .fun_testIfInherits(TRUE, "models.chosen", models.chosen, "list")
-  }
-  if (length(models.chosen) < 1) {
-    stop('No models selected')
+    models.chosen.single <- intersect(models.chosen, bm.wrap@single.models@models.computed)
+    models.chosen.ens <- intersect(models.chosen, bm.wrap@ensemble.models@em.computed)
   }
   
   
@@ -343,7 +382,8 @@ BIOMOD_ProjectionWrap <- function(bm.wrap,
   return(list(proj.name = proj.name,
               new.env = new.env,
               new.env.xy = new.env.xy,
-              models.chosen = models.chosen,
+              models.chosen.single = models.chosen.single,
+              models.chosen.ens = models.chosen.ens,
               metric.binary = metric.binary,
               metric.filter = metric.filter,
               compress = compress,

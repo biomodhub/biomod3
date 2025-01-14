@@ -48,7 +48,7 @@ setClass("BIOMOD.wrap.out",
 setMethod('show', signature('BIOMOD.wrap.out'), function(object) {
   .bm_cat("BIOMOD.wrap.out")
   cat("\nsp.name :", object@formated.data@sp.name, fill = .Options$width)
-  cat("\nexpl.var.names :", object@formated.data@expl.var.names, fill = .Options$width)
+  cat("\nexpl.var.names :", object@single.models@expl.var.names, fill = .Options$width)
   cat("\n")
   cat("\nSingle models computed:", toString(object@single.models@models.computed), fill = .Options$width)
   cat("\nEnsemble models computed:", toString(object@ensemble.models@em.computed), fill = .Options$width)
