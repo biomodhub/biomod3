@@ -4,7 +4,11 @@
 \name{MS.formated.data}
 \alias{MS.formated.data}
 \alias{MS.formated.data-class}
+\alias{show,MS.formated.data-method}
 \title{\code{MS_FormatingData()} output object class}
+\usage{
+\S4method{show}{MS.formated.data}(object)
+}
 \arguments{
 \item{object}{a \code{\link{MS.formated.data}} object}
 }

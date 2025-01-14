@@ -1,19 +1,19 @@
 
-.getOS <- function()
-{
-  sysinf = Sys.info()
-  if (!is.null(sysinf))
-  {
-    os = sysinf['sysname']
-    if (os == 'Darwin') os = "mac"
-  } else
-  {
-    os = .Platform$OS.type
-    if (grepl("^darwin", R.version$os)) os = "mac"
-    if (grepl("linux-gnu", R.version$os)) os = "linux"
-  }
-  return(tolower(os))
-}
+# .getOS <- function()
+# {
+#   sysinf = Sys.info()
+#   if (!is.null(sysinf))
+#   {
+#     os = sysinf['sysname']
+#     if (os == 'Darwin') os = "mac"
+#   } else
+#   {
+#     os = .Platform$OS.type
+#     if (grepl("^darwin", R.version$os)) os = "mac"
+#     if (grepl("linux-gnu", R.version$os)) os = "linux"
+#   }
+#   return(tolower(os))
+# }
 
 
 ## BIOMOD SPECIFIC CAT ----------------------------------------------------------------------------
@@ -112,168 +112,6 @@
 }
 
 
-## CHECK formated data ----------------------------------------------------------------------------
-## used in biomod2_classes_1
-
-.check_formating_spatial <- function(resp.var, expl.var = NULL, resp.xy = NULL, eval.data = FALSE)
-{
-  if (!is.null(resp.xy)) {
-    cat("\n      ! XY coordinates of response variable will be ignored because spatial response object is given.")
-  }
-  
-  if (inherits(resp.var, 'SpatialPoints')) { 
-    resp.xy <- data.matrix(sp::coordinates(resp.var))
-    if (inherits(resp.var, 'SpatialPointsDataFrame')) {
-      resp.var <- resp.var@data
-    } else {
-      cat("\n      ! Response variable is considered as only presences... Is it really what you want?")
-      resp.var <- rep(1, nrow(resp.xy))
-    }
-  }
-  
-  if (inherits(resp.var, 'SpatVector')) { 
-    resp.xy <- data.matrix(crds(resp.var))
-    resp.var <- as.data.frame(resp.var)
-    if (ncol(resp.var) == 0) {
-      if(eval.data){
-        stop("eval.resp must have both presences and absences in the data associated to the SpatVector") 
-      } else {
-        cat("\n      ! Response variable is considered as only presences... Is it really what you want?")
-        resp.var <- rep(1, nrow(resp.xy))
-      }
-    }
-  }
-  
-  if (!eval.data) {
-    if ( all(!is.na(resp.var)) && 
-         all(resp.var == 1, na.rm = TRUE) &&
-         !inherits(expl.var, c('Raster','SpatRaster'))) {
-      stop("For Presence-Only model based on SpatialPoints or SpatVector, expl.var needs to be a RasterStack or SpatRaster to be able to sample pseudo-absences")
-    }
-  }
-  
-  return(list(resp.var = resp.var, resp.xy = resp.xy))
-}
-
-.check_formating_resp.var.bin <- function(resp.var, eval.data = FALSE)
-{
-  if (length(which(!(resp.var %in% c(0, 1, NA)))) > 0) {
-    cat("\n      ! ", ifelse(eval.data, "Evaluation",""), "Response variable have non-binary values that will be converted into 0 (resp <=0) or 1 (resp > 0).")
-    resp.var[which(resp.var > 0)] <- 1
-    resp.var[which(resp.var <= 0)] <- 0
-  }
-  if (eval.data) {
-    if (!any(resp.var == 1, na.rm = TRUE) || !any(resp.var == 0, na.rm = TRUE)) {
-      stop("Evaluation response data must have both presences and absences")
-    }
-  }
-  as.numeric(resp.var)
-}
-
-.check_formating_resp.var.abun <- function(resp.var)
-{  
-  if (!is.numeric(resp.var)) {
-    if (!is.factor(resp.var)) {
-      stop("biomod2 accept only numeric or factor values : please check your response data.")
-    } else if (!is.ordered(resp.var)) {
-      stop("Your ordinal data doesn't seem ordered : please check your response data.")
-    }
-  } else {
-    if (-Inf %in% resp.var | Inf %in% resp.var) {
-      stop("It seems there is Inf in your response data. Please check and remove it.")
-    }
-    negative <- any(resp.var < 0 )
-    if (negative) {
-      stop("biomod2 doesn't accept negative values : please check your response data.")
-    }
-  }
-  resp.var <- resp.var[!is.na(resp.var)] ## Add a warning ? 
-  return(resp.var)
-}
-
-.check_formating_table <- function(resp.var)
-{
-  resp.var = as.data.frame(resp.var)
-  if (ncol(resp.var) > 1) {
-    stop("You must give a monospecific response variable (1D object)")
-  } else {
-    resp.var <- as.numeric(resp.var[, 1])
-  }
-  resp.var
-}
-
-.check_formating_xy <- function(resp.xy, resp.length, env.as.df = FALSE)
-{
-  if (ncol(resp.xy) != 2) {
-    stop("If given, resp.xy must be a 2 column matrix or data.frame")
-  }
-  if (nrow(resp.xy) != resp.length &&
-      !(env.as.df & (nrow(resp.xy) == 0))) {
-    stop("Response variable and its coordinates don't match")
-  }
-  as.data.frame(resp.xy)
-}
-
-.check_formating_expl.var <- function(expl.var, length.resp.var)
-{
-  if (is.matrix(expl.var) | is.numeric(expl.var)) {
-    expl.var <- as.data.frame(expl.var)
-  }
-  
-  if (inherits(expl.var, 'Raster')) {
-    expl.var <- raster::stack(expl.var, RAT = FALSE)
-    if (any(is.factor(expl.var))) {
-      expl.var <- .categorical_stack_to_terra(expl.var)
-    } else {
-      # as of 20/10/2022 the line below does not work if categorical variables
-      # are present, hence the trick above. 
-      expl.var <- rast(expl.var)
-    }
-  }
-  
-  if (inherits(expl.var, 'SpatialPoints')) {
-    expl.var <- as.data.frame(expl.var@data)
-  }
-  if (inherits(expl.var, 'SpatVector')) {
-    expl.var <- as.data.frame(expl.var)
-  }
-  
-  if (inherits(expl.var, 'data.frame')) {
-    if (nrow(expl.var) != length.resp.var) {
-      stop("If explanatory variable is not a raster then dimensions of response variable and explanatory variable must match!")
-    }
-  }
-  expl.var
-}
-
-
-## CHECK calib.lines names ------------------------------------------------------------------------
-## used in bm_CrossValidation
-
-.check_calib.lines_names <- function(calib.lines, expected_PA.names)
-{
-  full.names <- colnames(calib.lines)
-  if (missing(expected_PA.names)) { # CV only
-    expected_CV.names <- c(paste0("_allData_RUN", seq_len(ncol(calib.lines))), "_allData_allRun")
-    .fun_testIfIn(TRUE, "colnames(calib.lines)", full.names, expected_CV.names)
-  } else {
-    err.msg <- "colnames(calib.lines) must follow the following format: '_PAx_RUNy' with x and y integer"
-    # check for beginning '_'
-    if (!all( substr(full.names, 1, 1) == "_")) {
-      stop(err.msg)
-    }
-    PA.names <- sapply(strsplit(full.names, split = "_"), function(x) x[2])
-    CV.names <- sapply(strsplit(full.names, split = "_"), function(x) x[3])
-    .fun_testIfIn(TRUE, "Pseudo-absence dataset in colnames(calib.lines)", PA.names, expected_PA.names)
-    if (!all( substr(CV.names, 1, 3) == "RUN")) {
-      stop(err.msg)
-    }
-    CV.num <- sapply(strsplit(CV.names, split = "RUN"), function(x) x[2])
-    if (any(is.na(as.numeric(CV.num)))) {
-      stop(err.msg)
-    }
-  }
-}
 
 
 ## TOOLS for SpatRaster ---------------------------------------------------------------------------
@@ -292,39 +130,7 @@ rast.has.values <- function(x)
   suppressWarnings(any(!is.na(values(x))))
 }
 
-##' @name .check_duplicated_cells
-##' @title Check duplicated cells
-##' @description Identify data that are contained in the same raster cells ; 
-##' print warnings if need be and filter those data if asked for.
-##' @param env a \code{SpatRaster} with environmental data
-##' @param xy a \code{data.frame} with coordinates
-##' @param sp a \code{vector} with species occurrence data
-##' @param filter.raster a \code{boolean} 
-##' @return a \code{list}
-##' @keywords internal
-##' @importFrom terra cellFromXY
 
-.check_duplicated_cells <- function(env, xy, sp, filter.raster, PA.user.table = NULL)
-{
-  sp.cell <- duplicated(cellFromXY(env, xy))
-  if (any(sp.cell)) {
-    if (filter.raster) {
-      sp <- sp[!sp.cell]
-      xy <- xy[!sp.cell,]
-      if (!is.null(PA.user.table)) {
-        PA.user.table <- PA.user.table[!sp.cell, , drop = FALSE]
-      }
-      cat("\n !!! Some data are located in the same raster cell. 
-          Only the first data in each cell will be kept as `filter.raster = TRUE`.")
-    } else {
-      cat("\n !!! Some data are located in the same raster cell. 
-          Please set `filter.raster = TRUE` if you want an automatic filtering.")
-    }
-  }
-  return(list("sp"  = sp, 
-              "xy"  = xy,
-              "PA.user.table" = PA.user.table))
-}
 
 ## used in bm_PseudoAbsences, BIOMOD_Projection, BIOMOD_EnsembleForecasting
 .get_data_mask <- function(expl.var, value.out = 1)
@@ -337,182 +143,6 @@ rast.has.values <- function(x)
 }
 
 
-
-## GET variables class and ranges -----------------------------------------------------------------
-
-## used bm_RunModelsLoop, BIOMOD_EnsembleModeling
-.get_var_type <- function(data) { return(sapply(data, function(x) class(x)[1])) }
-
-.get_var_range <- function(data)
-{
-  get_range <- function(x) {
-    if (is.numeric(x)) {
-      return(c(min = min(x, na.rm = TRUE), max = max(x, na.rm = TRUE)))
-    } else if (is.factor(x)) {
-      return(levels(x))
-    }
-  }
-  xx <- lapply(data, get_range)
-  names(xx) <- names(data)
-  return(xx)
-}
-
-## used in BIOMOD_Projection, BIOMOD_EnsembleForecasting
-
-##' @name .get_env_class
-##' @title Get class of environmental data provided
-##' @description Get class of environmental data provided
-##' @param new.env object to identify
-##' @return a character
-##' @keywords internal
-
-.get_env_class <- function(new.env)
-{
-  .fun_testIfInherits(TRUE, "new.env", new.env, c('data.frame', 'SpatRaster'))
-  if (inherits(new.env,"data.frame")) {
-    return("data.frame")
-  }
-  if (inherits(new.env,"SpatRaster")) {
-    return("SpatRaster")
-  }
-  NULL
-}
-
-
-## RESCALE MODEL WITH BINOMIAL GLM ----------------------------------------------------------------
-## used in bm_RunModelsLoop
-
-##' 
-##' @importFrom stats glm binomial
-##' 
-
-.scaling_model <- function(dataToRescale, ref = NULL, ...)
-{
-  args <- list(...)
-  prevalence <- args$prevalence
-  weights <- args$weights
-  
-  ## if no weights given, some are created to rise the define prevalence ------
-  if (is.null(weights) && ! is.null(prevalence)) {
-    nbPres <- sum(ref, na.rm = TRUE)
-    nbAbs <- length(ref) - nbPres
-    weights <- rep(1, length(ref))
-    
-    if (nbAbs > nbPres) { # code absences as 1
-      weights[which(ref > 0)] <- (prevalence * nbAbs) / (nbPres * (1 - prevalence))
-    } else { # code presences as 1
-      weights[which(ref == 0 | is.na(ref))] <- (nbPres * (1 - prevalence)) / (prevalence * nbAbs)
-    }
-    weights = round(weights[]) # to remove glm & gam warnings
-    
-  } else if (is.null(weights)) { ## only 1 weights vector ---------------------
-    weights <- rep(1, length(ref))
-  }
-  
-  ## define a glm to scale predictions from 0 to 1 ----------------------------
-  scaling_model <- glm(ref ~ pred, data = data.frame(ref = as.numeric(ref), pred = as.numeric(dataToRescale))
-                       , family = binomial(link = probit), x = TRUE, weights = weights)
-  
-  return(scaling_model)
-}
-
-
-## TRANSFORM models outputs getting specific slot -------------------------------------------------
-## used in BIOMOD_Modeling, BIOMOD_EnsembleModeling
-
-.transform_outputs_list <- function(obj.type, obj.out, out = 'evaluation')
-{
-  ## 0. CHECK object type ---------------------------------------------------------------
-  .fun_testIfIn(TRUE, "obj.type", obj.type, c("mod", "em"))
-  .fun_testIfIn(TRUE, "out", out, c("model", "calib.failure", "models.kept", "pred", "pred.eval", "evaluation", "var.import"))
-  
-  if (obj.type == "mod") {
-    dim_names <- c("PA", "run", "algo")
-  } else if (obj.type == "em") {
-    dim_names <- c("merged.by", "filtered.by", "algo")
-    dim_names.bis <- c("merged.by.PA", "merged.by.run", "merged.by.algo")
-  }
-  
-  if (obj.type == "mod") {
-    output <- foreach(i.dim1 = 1:length(obj.out), .combine = "rbind") %do%
-      {
-        res <- obj.out[[i.dim1]][[out]]
-        if (!is.null(res) && length(res) > 0) {
-          res <- as.data.frame(res)
-          if (out %in% c("model", "calib.failure", "models.kept", "pred", "pred.eval")) {
-            colnames(res) <- out
-            res[["points"]] <- 1:nrow(res)
-            res <- res[, c("points", out)]
-          }
-          col_names <- colnames(res)
-          tmp.full.name <- obj.out[[i.dim1]][["model"]]
-          if(out == "calib.failure" | is.null(tmp.full.name)){
-            res[["full.name"]] <- NA
-            return(res[, c("full.name", col_names)])
-          } else {
-            res[["full.name"]] <- tmp.full.name
-            res[[dim_names[1]]] <- strsplit(tmp.full.name, "_")[[1]][2]
-            res[[dim_names[2]]] <- strsplit(tmp.full.name, "_")[[1]][3]
-            res[[dim_names[3]]] <- strsplit(tmp.full.name, "_")[[1]][4]
-            return(res[, c("full.name", dim_names, col_names)])
-          }
-        }
-      }
-  } else if (obj.type == "em") {
-    
-    ## 1. GET dimension names -------------------------------------------------------------
-    ## BIOMOD.models.out            -> dataset / run / algo
-    ## BIOMOD.ensemble.models.out   -> mergedBy / filteredBy / algo
-    dim1 <- length(obj.out)
-    dim2 <- length(obj.out[[1]])
-    dim3 <- length(obj.out[[1]][[1]])
-    
-    ## 2. GET outputs ---------------------------------------------------------------------
-    output <- foreach(i.dim1 = 1:dim1, .combine = "rbind") %:%
-      foreach(i.dim2 = 1:dim2, .combine = "rbind") %:% 
-      foreach(i.dim3 = 1:dim3, .combine = "rbind") %do%
-      {
-        if (length(obj.out) >= i.dim1 &&
-            length(obj.out[[i.dim1]]) >= i.dim2 &&
-            length(obj.out[[i.dim1]][[i.dim2]]) >= i.dim3) {
-          res <- obj.out[[i.dim1]][[i.dim2]][[i.dim3]][[out]]
-          if (!is.null(res) && length(res) > 0) {
-            res <- as.data.frame(res)
-            if (out %in% c("model", "calib.failure", "models.kept", "pred", "pred.eval")) {
-              colnames(res) <- out
-              res[["points"]] <- 1:nrow(res)
-              res <- res[, c("points", out)]
-            }
-            col_names <- colnames(res)
-            res[[dim_names[1]]] <- names(obj.out)[i.dim1]
-            res[[dim_names[2]]] <- names(obj.out[[i.dim1]])[i.dim2]
-            res[[dim_names[3]]] <- names(obj.out[[i.dim1]][[i.dim2]])[i.dim3]
-            tmp.full.name <- obj.out[[i.dim1]][[i.dim2]][[i.dim3]][["model"]]
-            if(out == "calib.failure" | is.null(tmp.full.name)){
-              res[["full.name"]] <- NA
-            } else {
-              res[["full.name"]] <- tmp.full.name
-            }
-            tmp <- names(obj.out)[i.dim1]
-            res[[dim_names.bis[1]]] <- strsplit(tmp, "_")[[1]][1]
-            res[[dim_names.bis[2]]] <- strsplit(tmp, "_")[[1]][2]
-            res[[dim_names.bis[3]]] <- strsplit(tmp, "_")[[1]][3]
-            res[[dim_names[1]]] <- NULL
-            return(res[, c("full.name", dim_names.bis, dim_names[-1], col_names)])
-          }
-        }
-      }
-  }
-  
-  if (out %in% c("model", "calib.failure", "models.kept")) {
-    if (is.null(output)) { 
-      output <- 'none'
-    } else { 
-      output <- unique(as.character(output[[out]]))
-    }
-  }
-  return(output)
-}
 
 ## EXTRACT model names according to specific infos ------------------------------------------------
 ## used in biomod2_classes_4, BIOMOD_EnsembleModeling
@@ -555,35 +185,7 @@ rast.has.values <- function(x)
   }
 }
 
-## FORMAT projection output as data.frame with appropriate columns --------------------------------
-## used in BIOMOD_Projection, BIOMOD_EnsembleForecasting
 
-.format_proj.df <- function(proj, obj.type = "mod")
-{
-  # argument check
-  .fun_testIfInherits(TRUE, "proj", proj, "data.frame")
-  .fun_testIfIn(TRUE, "obj.type", obj.type, c("mod","em"))
-  # function content
-  proj$points <- 1:nrow(proj)
-  tmp <- melt(proj, id.vars =  "points")
-  colnames(tmp) <- c("points", "full.name", "pred")
-  tmp$full.name <- as.character(tmp$full.name)
-  if(obj.type == "mod"){
-    tmp$PA <- .extract_modelNamesInfo(tmp$full.name, obj.type = "mod", info = "PA", as.unique = FALSE)
-    tmp$run <- .extract_modelNamesInfo(tmp$full.name, obj.type = "mod", info = "run", as.unique = FALSE)
-    tmp$algo <- .extract_modelNamesInfo(tmp$full.name, obj.type = "mod", info = "algo", as.unique = FALSE)
-    proj <- tmp[, c("full.name", "PA", "run", "algo", "points", "pred")]
-  } else {
-    tmp$merged.by.PA <- .extract_modelNamesInfo(tmp$full.name, obj.type = "em", info = "merged.by.PA", as.unique = FALSE)
-    tmp$merged.by.run <- .extract_modelNamesInfo(tmp$full.name, obj.type = "em", info = "merged.by.run", as.unique = FALSE)
-    tmp$merged.by.algo <- .extract_modelNamesInfo(tmp$full.name, obj.type = "em", info = "merged.by.algo", as.unique = FALSE)
-    tmp$filtered.by <- .extract_modelNamesInfo(tmp$full.name, obj.type = "em", info = "filtered.by", as.unique = FALSE)
-    tmp$algo <- .extract_modelNamesInfo(tmp$full.name, obj.type = "em", info = "algo", as.unique = FALSE)
-    proj <- tmp[, c("full.name", "merged.by.PA", "merged.by.run", "merged.by.algo"
-                    , "filtered.by", "algo", "points", "pred")]
-  }
-  proj
-}
 
 ## FORMAT .format_proj.df output from long to wide with models as columns -------------------------
 ## used in biomod2_classes_3
@@ -758,39 +360,6 @@ rast.has.values <- function(x)
 
 
 
-## GAM library loading ----------------------------------------------------------------------------
-## used in biomod2_classes_4, bm_RunModelsLoop
-
-##' @name .load_gam_namespace
-##' @title Load library for GAM models
-##' @description This function loads library for either GAM and BAM from mgcv package or 
-##' for GAM from gam package.
-##' @param model_subclass the subclass of GAM model
-##' @keywords internal
-
-.load_gam_namespace <- function(model_subclass = c("GAM_mgcv_gam","GAM_mgcv_bam", "GAM_gam_gam"))
-{
-  if (model_subclass %in% c("GAM_mgcv_gam", "GAM_mgcv_bam")) {
-    # cat("\n*** unloading gam package / loading mgcv package")
-    if (isNamespaceLoaded("gam")) { unloadNamespace("gam") }
-    if (!isNamespaceLoaded("mgcv")) { 
-      if(!requireNamespace('mgcv', quietly = TRUE)) stop("Package 'mgcv' not found")
-    }
-  }
-  
-  if (model_subclass == "GAM_gam_gam") {
-    # cat("\n*** unloading mgcv package / loading gam package")
-    if (isNamespaceLoaded("mgcv")) {
-      if (isNamespaceLoaded("caret")) { unloadNamespace("caret") } ## need to unload caret before car
-      if (isNamespaceLoaded("car")) { unloadNamespace("car") } ## need to unload car before mgcv
-      unloadNamespace("mgcv")
-    }
-    if (!isNamespaceLoaded("gam")) { 
-      if(!requireNamespace('gam', quietly = TRUE)) stop("Package 'gam' not found")
-    }
-  }
-  invisible(NULL)
-}
 
 
 ## CATEGORICAL variables tools --------------------------------------------------------------------
@@ -810,30 +379,6 @@ rast.has.values <- function(x)
   }))
 }
 
-## used in biomod2_classes_4, bm_RunModelsLoop
-
-##' @name .categorical2numeric
-##' 
-##' @title Transform categorical into numeric variables
-##' 
-##' @description Internal function transform categorical variables in a 
-##' data.frame into numeric variables. Mostly used with maxent which cannot 
-##' read character
-##' 
-##' @param df data.frame to be transformed
-##' @param categorical_var the names of categorical variables in df
-##' @return a data.frame without categorical variables
-##' @keywords internal
-
-.categorical2numeric <- function(df, categorical_var)
-{
-  if (length(categorical_var) > 0) {
-    for (this_var in categorical_var) {
-      df[,this_var] <- as.numeric(df[, this_var])
-    }
-  }
-  df
-}
 
 ## used in bm_FindOptimStat, bm_PlotResponseCurves, BIOMOD_Projection, BIOMOD_EnsembleForecasting
 .categorical_stack_to_terra <- function(myraster, expected_levels = NULL)

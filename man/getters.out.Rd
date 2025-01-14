@@ -154,6 +154,88 @@ get_species_data(obj, ...)
   ...
 )
 }
+\arguments{
+\item{obj}{a \code{\link{MS.formated.data}}, \code{\link{MS.models.out}}, \code{\link{MS.projection.out}} or
+\code{\link{MS.ensemble.models.out}} object}
+
+\item{...}{additional parameters}
+
+\item{sp}{a \code{character} name of a specific species}
+
+\item{as.data.frame}{a \code{logical} defining whether output should be returned as
+\code{data.frame} or \code{array} object}
+
+\item{PA}{(\emph{optional, default} \code{NULL}) \cr
+A \code{vector} containing pseudo-absence set to be loaded, must be among \code{PA1},
+\code{PA2}, \code{...}, \code{allData}}
+
+\item{run}{(\emph{optional, default} \code{NULL}) \cr
+A \code{vector} containing repetition set to be loaded, must be among \code{RUN1},
+\code{RUN2}, \code{...}, \code{allRun}}
+
+\item{subinfo}{a \code{character} corresponding to the information to be extracted, must be
+among \code{NULL}, \code{expl.var.names}, \code{resp.var}, \code{expl.var}, \code{MinMax},
+\code{eval.resp.var}, \code{eval.expl.var} (see Details)}
+
+\item{evaluation}{a \code{logical} defining whether evaluation data should be used or not}
+
+\item{full.name}{(\emph{optional, default} \code{NULL}) \cr
+A \code{vector} containing model names to be kept, must be either \code{all} or a
+sub-selection of model names that can be obtained with the \code{\link{get_built_models}}
+function}
+
+\item{algo}{(\emph{optional, default} \code{NULL}) \cr
+A \code{character} containing algorithm to be loaded, must be either
+\code{ANN}, \code{CTA}, \code{FDA}, \code{GAM}, \code{GBM}, \code{GLM}, \code{MARS},
+\code{MAXENT}, \code{MAXNET}, \code{RF}, \code{SRE}, \code{XGBOOST}}
+
+\item{model.as.col}{(\emph{optional, default} \code{FALSE}) \cr
+A \code{boolean} given to \code{\link{get_predictions}}. If \code{TRUE}
+prediction are returned as a wide \code{data.frame} with each column containing
+predictions for a single model and corresponding to the old output given by
+\pkg{biomod2} in version < 4.2-2. If \code{FALSE} predictions are returned
+as a long \code{data.frame} with many additional informations readily
+available.}
+
+\item{metric.eval}{(\emph{optional, default} \code{NULL}) \cr
+A \code{vector} containing evaluation metric to be kept, must be among \code{POD},
+\code{FAR}, \code{POFD}, \code{SR}, \code{ACCURACY}, \code{BIAS}, \code{ROC}, \code{TSS},
+\code{KAPPA}, \code{OR}, \code{ORSS}, \code{CSI}, \code{ETS}, \code{BOYCE}, \code{MPA}}
+
+\item{expl.var}{(\emph{optional, default} \code{NULL}) \cr
+A \code{vector} containing explanatory variables to be kept, that can be obtained with the
+\code{\link{get_formal_data}(obj, subinfo = 'expl.var.names')} function}
+
+\item{merged.by.algo}{(\emph{optional, default} \code{NULL}) \cr
+A \code{character} containing merged algorithm to be loaded, must be among
+\code{ANN}, \code{CTA}, \code{FDA}, \code{GAM}, \code{GBM}, \code{GLM}, \code{MARS},
+\code{MAXENT}, \code{MAXNET}, \code{RF}, \code{SRE}, \code{XGBOOST}, \code{mergedAlgo}}
+
+\item{merged.by.run}{(\emph{optional, default} \code{NULL}) \cr
+A \code{vector} containing merged repetition set to be loaded, must be among \code{RUN1},
+\code{RUN2}, \code{...}, \code{mergedRun}}
+
+\item{merged.by.PA}{(\emph{optional, default} \code{NULL}) \cr
+A \code{vector} containing merged pseudo-absence set to be loaded, must be among \code{PA1},
+\code{PA2}, \code{...}, \code{mergedData}}
+
+\item{filtered.by}{(\emph{optional, default} \code{NULL}) \cr
+A \code{vector} containing evaluation metric selected to filter single models to build the
+ensemble models, must be among \code{POD}, \code{FAR}, \code{POFD}, \code{SR},
+\code{ACCURACY}, \code{BIAS}, \code{ROC}, \code{TSS}, \code{KAPPA}, \code{OR}, \code{ORSS},
+\code{CSI}, \code{ETS}, \code{BOYCE}, \code{MPA}}
+
+\item{metric.binary}{(\emph{optional, default} \code{NULL}) \cr
+A \code{vector} containing evaluation metric selected to transform predictions into binary
+values, must be among \code{POD}, \code{FAR}, \code{POFD}, \code{SR}, \code{ACCURACY},
+\code{BIAS}, \code{ROC}, \code{TSS}, \code{KAPPA}, \code{OR}, \code{ORSS}, \code{CSI},
+\code{ETS}, \code{BOYCE}, \code{MPA}}
+
+\item{metric.filter}{(\emph{optional, default} \code{NULL}) \cr
+A \code{vector} containing evaluation metric to filter predictions, must be among \code{POD},
+\code{FAR}, \code{POFD}, \code{SR}, \code{ACCURACY}, \code{BIAS}, \code{ROC}, \code{TSS},
+\code{KAPPA}, \code{OR}, \code{ORSS}, \code{CSI}, \code{ETS}, \code{BOYCE}, \code{MPA}}
+}
 \description{
 Functions to extract informations from \code{\link{MS.models.out}},
 \code{\link{MS.projection.out}} or \code{\link{MS.ensemble.models.out}} objects

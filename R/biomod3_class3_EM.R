@@ -13,6 +13,7 @@
 ##' \code{\link{BIOMOD_EnsembleForecasting}}
 ##' 
 ##' 
+##' @slot ms.project a \code{character} corresponding to the name of the multispecies project
 ##' @slot modeling.id a \code{character} corresponding to the name (ID) of the
 ##'   simulation set
 ##' @slot dir.name a \code{character} corresponding to the modeling folder
@@ -30,18 +31,7 @@
 ##' @slot em.failed a \code{vector} containing names of failed ensemble models
 # ##' @slot em.models_needed a \code{list} containing single models for each ensemble model
 ##' @slot em.models_kept a \code{list} containing single models for each ensemble model
-##' @slot models.evaluation a \code{\link{BIOMOD.stored.data.frame-class}} object
-##'   containing models evaluation
-##' @slot variables.importance a \code{\link{BIOMOD.stored.data.frame-class}} object
-##'   containing variables importance
-##' @slot models.prediction a \code{\link{BIOMOD.stored.data.frame-class}} object
-##'   containing models predictions
-##' @slot models.prediction.eval a \code{\link{BIOMOD.stored.data.frame-class}}
-##'   object containing models predictions for evaluation data
 ##' @slot link a \code{character} containing the file name of the saved object
-##'   
-##' @param object a \code{\link{MS.ensemble.models.out}} object
-##' 
 ##' 
 ##' 
 ##' @seealso \code{\link{BIOMOD_EnsembleModeling}}, \code{\link{BIOMOD_LoadModels}}, 

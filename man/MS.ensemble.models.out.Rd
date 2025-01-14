@@ -9,9 +9,6 @@
 \usage{
 \S4method{show}{MS.ensemble.models.out}(object)
 }
-\arguments{
-\item{object}{a \code{\link{MS.ensemble.models.out}} object}
-}
 \description{
 Class returned by \code{\link{BIOMOD_EnsembleModeling}}, and used by
 \code{\link{BIOMOD_LoadModels}}, \code{\link{BIOMOD_PresenceOnly}} and
@@ -20,6 +17,8 @@ Class returned by \code{\link{BIOMOD_EnsembleModeling}}, and used by
 \section{Slots}{
 
 \describe{
+\item{\code{ms.project}}{a \code{character} corresponding to the name of the multispecies project}
+
 \item{\code{modeling.id}}{a \code{character} corresponding to the name (ID) of the
 simulation set}
 
@@ -45,18 +44,6 @@ been combined to build the ensemble models, must be among
 \item{\code{em.failed}}{a \code{vector} containing names of failed ensemble models}
 
 \item{\code{em.models_kept}}{a \code{list} containing single models for each ensemble model}
-
-\item{\code{models.evaluation}}{a \code{\link{BIOMOD.stored.data.frame-class}} object
-containing models evaluation}
-
-\item{\code{variables.importance}}{a \code{\link{BIOMOD.stored.data.frame-class}} object
-containing variables importance}
-
-\item{\code{models.prediction}}{a \code{\link{BIOMOD.stored.data.frame-class}} object
-containing models predictions}
-
-\item{\code{models.prediction.eval}}{a \code{\link{BIOMOD.stored.data.frame-class}}
-object containing models predictions for evaluation data}
 
 \item{\code{link}}{a \code{character} containing the file name of the saved object}
 }}

@@ -16,20 +16,13 @@ Class returned by \code{\link{BIOMOD_Wrap}}, and used by
 \section{Slots}{
 
 \describe{
-\item{\code{modeling.id}}{a \code{character} corresponding to the name (ID) of the
-simulation set}
+\item{\code{formated.data}}{a \code{BIOMOD.formated.data} object}
 
-\item{\code{dir.name}}{a \code{character} corresponding to the modeling folder}
+\item{\code{single.models}}{a \code{BIOMOD.models.out} object}
 
-\item{\code{sp.name}}{a \code{character} corresponding to the species name}
+\item{\code{ensemble.models}}{a \code{BIOMOD.ensemble.models.out} object}
 
-\item{\code{expl.var.names}}{a \code{vector} containing names of explanatory
-variables}
-
-\item{\code{data.type}}{a \code{character} corresponding to the data type}
-
-\item{\code{models.out}}{a \code{\link{BIOMOD.stored.models.out-class}} object
-containing informations from \code{\link{BIOMOD_Modeling}} object}
+\item{\code{output}}{a \code{character} link to the output file}
 }}
 
 \author{

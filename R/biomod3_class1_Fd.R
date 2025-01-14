@@ -75,6 +75,46 @@ setClass("MS.formated.data",
            }
          })
 
+### plot.MS.formated.data (doc) --------------------------------------------------
+##' 
+##' @rdname plot
+##' @docType methods
+##' @title \code{plot} method for \code{\link{MS.formated.data}} object class
+##' 
+##' @description Plot the spatial distribution of presences, absences and 
+##' pseudo-absences among the different potential dataset (calibration, 
+##' validation and evaluation). Available only if coordinates were given to 
+##' \code{\link{MS_FormatingData}}.
+##' 
+##' 
+##' @param x a \code{\link{MS.formated.data}} object. Coordinates must be available to be able to use \code{plot}.
+##' @param plot.type a \code{character}, either \code{'points'} (\emph{default}) 
+##' or \code{'raster'} (\emph{if environmental variables were given as a raster}). 
+##' With \code{plot.type = 'points'} occurrences will be represented as points
+##' (better when using fine-grained data). With \code{plot.type = 'raster'}
+##' occurrences will be represented as a raster (better when using coarse-grained
+##' data)
+##' @param plot.output a \code{character}, either \code{'facet'} (\emph{default}) 
+##' or \code{'list'}. \code{plot.output} determines whether plots are returned
+##' as a single facet with all plots or a \code{list} of individual plots
+##' (better when there are numerous graphics)
+##' @param plot.eval (\emph{optional, default} \code{TRUE}) \cr 
+##' A \code{logical} defining whether evaluation data should be added to the plot or not
+##' @param do.plot (\emph{optional, default} \code{TRUE}) \cr 
+##' A \code{logical} defining whether the plot is to be rendered or not
+##' @param point.size a \code{numeric} to adjust the size of points when
+##'  \code{plot.type = 'points'}.
+##' 
+##' @return a \code{list} with the data used to generate the plot and a
+##' \code{ggplot2} object 
+##' 
+##' @importFrom terra rast minmax crds ext
+##' @importFrom ggplot2 ggplot aes scale_color_manual scale_shape_manual scale_fill_manual guides xlim ylim ggtitle facet_wrap theme guide_legend after_stat
+##' 
+##' @export
+
+
+
 
 setMethod('plot', signature(x = 'MS.formated.data', y = "missing"),
           function(x,
@@ -383,6 +423,13 @@ setMethod('plot', signature(x = 'MS.formated.data', y = "missing"),
               has.mask.eval = has.mask.eval))
 }
 
+
+### show.MS.formated.data  --------------------------------------------------
+##' 
+##' @rdname MS.formated.data
+##' @importMethodsFrom methods show
+##' @export
+##' 
 
 setMethod('show', signature('MS.formated.data'),
           function(object)

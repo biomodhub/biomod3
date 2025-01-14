@@ -62,13 +62,6 @@ parallelize the single models computation}
 
 \item{seed.val}{(\emph{optional, default} \code{NULL}) \cr
 An \code{integer} value corresponding to the new seed value to be set}
-
-\item{models.pa}{(\emph{optional, default} \code{NULL}) \cr
-A \code{list} containing for each model a \code{vector} defining which pseudo-absence datasets
-are to be used, must be among \code{colnames(ms.format@PA.table)}}
-
-\item{do.progress}{(\emph{optional, default} \code{TRUE}) \cr
-A \code{logical} value defining whether the progress bar is to be rendered or not}
 }
 \value{
 A \code{\link{MS.models.out}} object acting as a proxi for the created \code{BIOMOD.models.out}.

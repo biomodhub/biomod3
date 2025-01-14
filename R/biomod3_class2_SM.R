@@ -7,6 +7,8 @@
 ##' @author Hélène Blancheteau
 ##' 
 ##' @title \code{MS_Modeling()} output object class
+##' 
+##' @export
 
 setClass("MS.models.out",
          representation(ms.project = 'character',
@@ -50,6 +52,74 @@ setClass("BIOMOD.stored.ms.models.out",
 ##' 
 ##' @title Functions to extract informations from \code{\link{MS.models.out}}, 
 ##' \code{\link{MS.projection.out}} or \code{\link{MS.ensemble.models.out}} objects
+##' 
+##' @param obj a \code{\link{MS.formated.data}}, \code{\link{MS.models.out}}, \code{\link{MS.projection.out}} or 
+##' \code{\link{MS.ensemble.models.out}} object
+##' @param sp a \code{character} name of a specific species 
+##' @param as.data.frame a \code{logical} defining whether output should be returned as 
+##' \code{data.frame} or \code{array} object
+##' @param subinfo a \code{character} corresponding to the information to be extracted, must be 
+##' among \code{NULL}, \code{expl.var.names}, \code{resp.var}, \code{expl.var}, \code{MinMax}, 
+##' \code{eval.resp.var}, \code{eval.expl.var} (see Details)
+##' @param evaluation a \code{logical} defining whether evaluation data should be used or not
+##' @param full.name (\emph{optional, default} \code{NULL}) \cr 
+##' A \code{vector} containing model names to be kept, must be either \code{all} or a 
+##' sub-selection of model names that can be obtained with the \code{\link{get_built_models}} 
+##' function
+##' 
+##' @param PA (\emph{optional, default} \code{NULL}) \cr 
+##' A \code{vector} containing pseudo-absence set to be loaded, must be among \code{PA1}, 
+##' \code{PA2}, \code{...}, \code{allData}
+##' @param run (\emph{optional, default} \code{NULL}) \cr 
+##' A \code{vector} containing repetition set to be loaded, must be among \code{RUN1}, 
+##' \code{RUN2}, \code{...}, \code{allRun}
+##' @param algo (\emph{optional, default} \code{NULL}) \cr 
+##' A \code{character} containing algorithm to be loaded, must be either 
+##' \code{ANN}, \code{CTA}, \code{FDA}, \code{GAM}, \code{GBM}, \code{GLM}, \code{MARS}, 
+##' \code{MAXENT}, \code{MAXNET}, \code{RF}, \code{SRE}, \code{XGBOOST}
+##' 
+##' @param merged.by.PA (\emph{optional, default} \code{NULL}) \cr 
+##' A \code{vector} containing merged pseudo-absence set to be loaded, must be among \code{PA1}, 
+##' \code{PA2}, \code{...}, \code{mergedData}
+##' @param merged.by.run (\emph{optional, default} \code{NULL}) \cr 
+##' A \code{vector} containing merged repetition set to be loaded, must be among \code{RUN1}, 
+##' \code{RUN2}, \code{...}, \code{mergedRun}
+##' @param merged.by.algo (\emph{optional, default} \code{NULL}) \cr 
+##' A \code{character} containing merged algorithm to be loaded, must be among 
+##' \code{ANN}, \code{CTA}, \code{FDA}, \code{GAM}, \code{GBM}, \code{GLM}, \code{MARS}, 
+##' \code{MAXENT}, \code{MAXNET}, \code{RF}, \code{SRE}, \code{XGBOOST}, \code{mergedAlgo}
+##' @param filtered.by (\emph{optional, default} \code{NULL}) \cr 
+##' A \code{vector} containing evaluation metric selected to filter single models to build the 
+##' ensemble models, must be among \code{POD}, \code{FAR}, \code{POFD}, \code{SR}, 
+##' \code{ACCURACY}, \code{BIAS}, \code{ROC}, \code{TSS}, \code{KAPPA}, \code{OR}, \code{ORSS}, 
+##' \code{CSI}, \code{ETS}, \code{BOYCE}, \code{MPA}
+##' 
+##' @param metric.eval (\emph{optional, default} \code{NULL}) \cr 
+##' A \code{vector} containing evaluation metric to be kept, must be among \code{POD}, 
+##' \code{FAR}, \code{POFD}, \code{SR}, \code{ACCURACY}, \code{BIAS}, \code{ROC}, \code{TSS}, 
+##' \code{KAPPA}, \code{OR}, \code{ORSS}, \code{CSI}, \code{ETS}, \code{BOYCE}, \code{MPA}
+##' @param expl.var (\emph{optional, default} \code{NULL}) \cr 
+##' A \code{vector} containing explanatory variables to be kept, that can be obtained with the 
+##' \code{\link{get_formal_data}(obj, subinfo = 'expl.var.names')} function
+##' 
+##' @param metric.binary (\emph{optional, default} \code{NULL}) \cr 
+##' A \code{vector} containing evaluation metric selected to transform predictions into binary 
+##' values, must be among \code{POD}, \code{FAR}, \code{POFD}, \code{SR}, \code{ACCURACY}, 
+##' \code{BIAS}, \code{ROC}, \code{TSS}, \code{KAPPA}, \code{OR}, \code{ORSS}, \code{CSI}, 
+##' \code{ETS}, \code{BOYCE}, \code{MPA}
+##' @param metric.filter (\emph{optional, default} \code{NULL}) \cr 
+##' A \code{vector} containing evaluation metric to filter predictions, must be among \code{POD}, 
+##' \code{FAR}, \code{POFD}, \code{SR}, \code{ACCURACY}, \code{BIAS}, \code{ROC}, \code{TSS}, 
+##' \code{KAPPA}, \code{OR}, \code{ORSS}, \code{CSI}, \code{ETS}, \code{BOYCE}, \code{MPA}
+##' 
+##' @param model.as.col (\emph{optional, default} \code{FALSE}) \cr
+##' A \code{boolean} given to \code{\link{get_predictions}}. If \code{TRUE} 
+##' prediction are returned as a wide \code{data.frame} with each column containing
+##' predictions for a single model and corresponding to the old output given by
+##' \pkg{biomod2} in version < 4.2-2. If \code{FALSE} predictions are returned 
+##' as a long \code{data.frame} with many additional informations readily 
+##' available.
+##' @param ... additional parameters
 
 setGeneric("get_species_data", function(obj, ...) { standardGeneric("get_species_data") }) ## 012
 setGeneric("get_eval_data", function(obj, ...) { standardGeneric("get_eval_data") }) ## 012

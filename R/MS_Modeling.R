@@ -16,9 +16,6 @@
 ##' @param models a \code{vector} containing model names to be computed, must be among 
 ##' \code{ANN}, \code{CTA}, \code{FDA}, \code{GAM}, \code{GBM}, \code{GLM}, \code{MARS}, 
 ##' \code{MAXENT}, \code{MAXNET}, \code{RF}, \code{RFd}, \code{SRE}, \code{XGBOOST}
-##' @param models.pa (\emph{optional, default} \code{NULL}) \cr 
-##' A \code{list} containing for each model a \code{vector} defining which pseudo-absence datasets 
-##' are to be used, must be among \code{colnames(ms.format@PA.table)}
 ##' 
 ##' @param params.CV a \code{list} with the species names associated to the parameters of Cross-Validation. See BIOMOD_Modeling
 ##' @param params.OPT a \code{list} with the species names associated to the options of the algorithms. See BIOMOD_Modeling
@@ -46,8 +43,6 @@
 ##' parallelize the single models computation
 ##' @param seed.val (\emph{optional, default} \code{NULL}) \cr 
 ##' An \code{integer} value corresponding to the new seed value to be set
-##' @param do.progress (\emph{optional, default} \code{TRUE}) \cr 
-##' A \code{logical} value defining whether the progress bar is to be rendered or not
 ##' 
 ##' 
 ##' @return

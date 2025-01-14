@@ -5,7 +5,6 @@
 \title{Run a range of species distribution models}
 \usage{
 BIOMOD_Wrap(
-  ms.project.name,
   dir.name = ".",
   modeling.id = as.character(format(Sys.time(), "\%s")),
   data.type = "binary",
@@ -34,8 +33,6 @@ BIOMOD_Wrap(
 )
 }
 \arguments{
-\item{ms.project.name}{a \code{character} corresponding to the name of your project for your multispecies modelling}
-
 \item{dir.name}{(\emph{optional, default} \code{.}) \cr
 A \code{character} corresponding to the modeling folder}
 
@@ -76,6 +73,14 @@ object containing binary data.}}
 If \code{resp.var} is a \code{vector}, a 2-columns \code{matrix} or \code{data.frame}
 containing the corresponding \code{X} and \code{Y} coordinates that will be used to evaluate
 the species distribution model(s) with independent data}
+
+\item{eval.expl.var}{(\emph{optional, default} \code{NULL}) \cr
+A \code{matrix}, \code{data.frame}, \code{\link[terra:vect]{SpatVector}}
+or \code{\link[terra:rast]{SpatRaster}} object containing the explanatory variables (in
+columns or layers) that will be used to evaluate the species distribution model(s) with
+independent data.
+\cr \emph{Note that old format from \pkg{raster} and \pkg{sp} are still supported such as
+\code{RasterStack} and \code{SpatialPointsDataFrame} objects. }}
 
 \item{filter.raster}{(\emph{optional, default} \code{FALSE}) \cr
 If \code{expl.var} is of raster type, a \code{logical} value defining whether \code{resp.var}
@@ -127,14 +132,6 @@ An \code{integer} value corresponding to the new seed value to be set}
 \item{nb.cpu}{(\emph{optional, default} \code{1}) \cr
 An \code{integer} value corresponding to the number of computing resources to be used to
 parallelize the single models computation}
-
-\item{eval.expl.var.var}{(\emph{optional, default} \code{NULL}) \cr
-A \code{matrix}, \code{data.frame}, \code{\link[terra:vect]{SpatVector}}
-or \code{\link[terra:rast]{SpatRaster}} object containing the explanatory variables (in
-columns or layers) that will be used to evaluate the species distribution model(s) with
-independent data.
-\cr \emph{Note that old format from \pkg{raster} and \pkg{sp} are still supported such as
-\code{RasterStack} and \code{SpatialPointsDataFrame} objects. }}
 }
 \value{
 A \code{\link{MS.models.out}} object acting as a proxi for the created \code{BIOMOD.models.out}.

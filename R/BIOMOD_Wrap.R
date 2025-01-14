@@ -8,7 +8,6 @@
 ##' The parameters could be change inside the arguments 'params. 's. 
 ##' 
 ##' 
-##' @param ms.project.name a \code{character} corresponding to the name of your project for your multispecies modelling
 ##' @param dir.name (\emph{optional, default} \code{.}) \cr
 ##' A \code{character} corresponding to the modeling folder
 ##' @param modeling.id a \code{character} corresponding to the name (ID) of the simulation set 
@@ -42,7 +41,7 @@
 ##' \cr \emph{Note that old format from \pkg{sp} are still supported such as
 ##'  \code{SpatialPoints}  (if presence-only) or \code{SpatialPointsDataFrame}
 ##'  object containing binary data.}
-##' @param eval.expl.var.var (\emph{optional, default} \code{NULL}) \cr 
+##' @param eval.expl.var (\emph{optional, default} \code{NULL}) \cr 
 ##' A \code{matrix}, \code{data.frame}, \code{\link[terra:vect]{SpatVector}}
 ##' or \code{\link[terra:rast]{SpatRaster}} object containing the explanatory variables (in 
 ##' columns or layers) that will be used to evaluate the species distribution model(s) with 
@@ -162,61 +161,32 @@
 ##' 
 ###################################################################################################
 
-setGeneric("BIOMOD_Wrap", function(ms.project.name,
-                                   dir.name = ".",
-                                   modeling.id = as.character(format(Sys.time(), "%s")),
-                                   data.type = "binary",
-                                   resp.name,
-                                   resp.var,
-                                   resp.xy = NULL,
-                                   expl.var,
-                                   eval.resp.var = NULL,
-                                   eval.resp.xy = NULL,
-                                   eval.expl.var = NULL,
-                                   filter.raster = FALSE,
-                                   params.PA,
-                                   models, ### mettre un défaut ? 
-                                   models.pa = NULL,
-                                   metric.eval = c("KAPPA", "TSS", "ROC"),
-                                   weights = NULL,
-                                   prevalence = NULL,
-                                   scale.models = FALSE,
-                                   var.import = 0,
-                                   params.CV,
-                                   params.OPT,
-                                   em.algo,
-                                   params.EM,
-                                   seed.val = NULL,
-                                   nb.cpu = 1){
-  standardGeneric("BIOMOD_Wrap")
-})
 
-setMethod(f= "BIOMOD_Wrap", signature(ms.project.name = "missing"), function(ms.project.name,
-                                                                             dir.name = ".",
-                                                                             modeling.id = as.character(format(Sys.time(), "%s")),
-                                                                             data.type = "binary",
-                                                                             resp.name,
-                                                                             resp.var,
-                                                                             resp.xy = NULL,
-                                                                             expl.var,
-                                                                             eval.resp.var = NULL,
-                                                                             eval.resp.xy = NULL,
-                                                                             eval.expl.var = NULL,
-                                                                             filter.raster = FALSE,
-                                                                             params.PA,
-                                                                             models, ### mettre un défaut ? 
-                                                                             models.pa = NULL,
-                                                                             metric.eval = c("KAPPA", "TSS", "ROC"),
-                                                                             weights = NULL,
-                                                                             prevalence = NULL,
-                                                                             scale.models = FALSE,
-                                                                             var.import = 0,
-                                                                             params.CV,
-                                                                             params.OPT,
-                                                                             em.algo,
-                                                                             params.EM,
-                                                                             seed.val = NULL,
-                                                                             nb.cpu = 1){
+BIOMOD_Wrap <- function(dir.name = ".",
+                        modeling.id = as.character(format(Sys.time(), "%s")),
+                        data.type = "binary",
+                        resp.name,
+                        resp.var,
+                        resp.xy = NULL,
+                        expl.var,
+                        eval.resp.var = NULL,
+                        eval.resp.xy = NULL,
+                        eval.expl.var = NULL,
+                        filter.raster = FALSE,
+                        params.PA,
+                        models, ### mettre un défaut ? 
+                        models.pa = NULL,
+                        metric.eval = c("KAPPA", "TSS", "ROC"),
+                        weights = NULL,
+                        prevalence = NULL,
+                        scale.models = FALSE,
+                        var.import = 0,
+                        params.CV,
+                        params.OPT,
+                        em.algo,
+                        params.EM,
+                        seed.val = NULL,
+                        nb.cpu = 1){
   
   .bm_cat(paste0("Workflow for ", resp.name))
 
@@ -330,119 +300,119 @@ setMethod(f= "BIOMOD_Wrap", signature(ms.project.name = "missing"), function(ms.
   .bm_cat("Done") #to remove ? 
   
   return(wrap)
-} )
+} 
 
-#======================================================================================================
-
-## BIOMOD_Wrap for ms 
-
-setMethod("BIOMOD_Wrap", signature(ms.project.name = "character"), function(ms.project.name,
-                                                                            dir.name = ".",
-                                                                            modeling.id = as.character(format(Sys.time(), "%s")),
-                                                                            data.type = "binary",
-                                                                            resp.name,
-                                                                            resp.var,
-                                                                            resp.xy = NULL,
-                                                                            expl.var,
-                                                                            eval.resp.var = NULL,
-                                                                            eval.resp.xy = NULL,
-                                                                            eval.expl.var = NULL,
-                                                                            filter.raster = FALSE,
-                                                                            params.PA,
-                                                                            models, 
-                                                                            models.pa = NULL,
-                                                                            metric.eval = c("KAPPA", "TSS", "ROC"),
-                                                                            weights = NULL,
-                                                                            prevalence = NULL,
-                                                                            scale.models = FALSE,
-                                                                            var.import = 0,
-                                                                            params.CV,
-                                                                            params.OPT,
-                                                                            em.algo,
-                                                                            params.EM,
-                                                                            seed.val = NULL,
-                                                                            nb.cpu = 1){
-  
-  ## 0. Check arguments ---------------------------------------------------------------------------
-  args <- .BIOMOD_Wrap.check.args(dir.name = dir.name,
-                                  modeling.id = modeling.id,
-                                  data.type = data.type,
-                                  resp.name = resp.name,
-                                  resp.var = resp.var,
-                                  resp.xy = resp.xy,
-                                  expl.var = expl.var,
-                                  eval.resp.var = eval.resp.var,
-                                  eval.resp.xy = eval.resp.xy,
-                                  eval.expl.var = eval.expl.var,
-                                  filter.raster = filter.raster,
-                                  params.PA = params.PA,
-                                  models = models,
-                                  models.pa = models.pa,
-                                  metric.eval = metric.eval,
-                                  weights = weights,
-                                  prevalence = prevalence,
-                                  var.import = var.import,
-                                  params.CV = params.CV,
-                                  params.OPT = params.OPT,
-                                  em.algo = em.algo,
-                                  params.EM = params.EM,
-                                  seed.val = seed.val,
-                                  nb.cpu = nb.cpu
-  )
-  for (argi in names(args)) { assign(x = argi, value = args[[argi]]) }
-  rm(args)
-  
-  formated.data <- MS_FormatingData(ms.project.name = ms.project.name,
-                                     dir.name = dir.name,
-                                     resp.name = resp.name,
-                                     resp.var = resp.var,
-                                     expl.var = expl.var,
-                                     data.type = data.type,
-                                     resp.xy = resp.xy,
-                                     eval.resp.var = eval.resp.var,
-                                     eval.expl.var = eval.expl.var,
-                                     eval.resp.xy = eval.resp.xy,
-                                     params = params.PA, 
-                                     #single.formated.data = NULL,
-                                     #ms.formated.data = NULL,
-                                     filter.raster = filter.raster,
-                                     seed.val = NULL)
-
-  
-  single.models <- MS_Modeling(formated.data,
-                               modeling.id = modeling.id,
-                               models = models,
-                               params.CV = params.CV,
-                               params.OPT = params.OPT,
-                               weights = weights,
-                               prevalence = prevalence,
-                               metric.eval = metric.eval,
-                               var.import = var.import,
-                               scale.models = FALSE,
-                               nb.cpu = nb.cpu,
-                               seed.val = NULL)
-  
-  ### petit gros problème 
-  params.EM <- .inversion_species_params(params.EM)
-  em.models <- MS_EnsembleModeling(single.models,
-                                   models.chosen = params.EM$models.chosen,
-                                   em.by = params.EM$em.by,
-                                   em.algo = em.algo,
-                                   metric.select = params.EM$metric.select,
-                                   metric.select.thresh = params.EM$metric.select.thresh,
-                                   metric.select.table = params.EM$metric.select.table,
-                                   metric.select.dataset = params.EM$metric.select.dataset,
-                                   metric.eval = metric.eval,
-                                   var.import = var.import,
-                                   EMci.alpha = params.EM$EMci.alpha,
-                                   EMwmean.decay = params.EM$EMwmean.decay,
-                                   nb.cpu = nb.cpu,
-                                   seed.val = NULL)
-  
-  return(list("formated.data" = formated.data,
-              "single.models" = single.models,
-              "ensemble.models" = em.models))
-})
+# #======================================================================================================
+# 
+# ## BIOMOD_Wrap for ms 
+# 
+# setMethod("BIOMOD_Wrap", signature(ms.project.name = "character"), function(ms.project.name,
+#                                                                             dir.name = ".",
+#                                                                             modeling.id = as.character(format(Sys.time(), "%s")),
+#                                                                             data.type = "binary",
+#                                                                             resp.name,
+#                                                                             resp.var,
+#                                                                             resp.xy = NULL,
+#                                                                             expl.var,
+#                                                                             eval.resp.var = NULL,
+#                                                                             eval.resp.xy = NULL,
+#                                                                             eval.expl.var = NULL,
+#                                                                             filter.raster = FALSE,
+#                                                                             params.PA,
+#                                                                             models, 
+#                                                                             models.pa = NULL,
+#                                                                             metric.eval = c("KAPPA", "TSS", "ROC"),
+#                                                                             weights = NULL,
+#                                                                             prevalence = NULL,
+#                                                                             scale.models = FALSE,
+#                                                                             var.import = 0,
+#                                                                             params.CV,
+#                                                                             params.OPT,
+#                                                                             em.algo,
+#                                                                             params.EM,
+#                                                                             seed.val = NULL,
+#                                                                             nb.cpu = 1){
+#   
+#   ## 0. Check arguments ---------------------------------------------------------------------------
+#   args <- .BIOMOD_Wrap.check.args(dir.name = dir.name,
+#                                   modeling.id = modeling.id,
+#                                   data.type = data.type,
+#                                   resp.name = resp.name,
+#                                   resp.var = resp.var,
+#                                   resp.xy = resp.xy,
+#                                   expl.var = expl.var,
+#                                   eval.resp.var = eval.resp.var,
+#                                   eval.resp.xy = eval.resp.xy,
+#                                   eval.expl.var = eval.expl.var,
+#                                   filter.raster = filter.raster,
+#                                   params.PA = params.PA,
+#                                   models = models,
+#                                   models.pa = models.pa,
+#                                   metric.eval = metric.eval,
+#                                   weights = weights,
+#                                   prevalence = prevalence,
+#                                   var.import = var.import,
+#                                   params.CV = params.CV,
+#                                   params.OPT = params.OPT,
+#                                   em.algo = em.algo,
+#                                   params.EM = params.EM,
+#                                   seed.val = seed.val,
+#                                   nb.cpu = nb.cpu
+#   )
+#   for (argi in names(args)) { assign(x = argi, value = args[[argi]]) }
+#   rm(args)
+#   
+#   formated.data <- MS_FormatingData(ms.project.name = ms.project.name,
+#                                      dir.name = dir.name,
+#                                      resp.name = resp.name,
+#                                      resp.var = resp.var,
+#                                      expl.var = expl.var,
+#                                      data.type = data.type,
+#                                      resp.xy = resp.xy,
+#                                      eval.resp.var = eval.resp.var,
+#                                      eval.expl.var = eval.expl.var,
+#                                      eval.resp.xy = eval.resp.xy,
+#                                      params = params.PA, 
+#                                      #single.formated.data = NULL,
+#                                      #ms.formated.data = NULL,
+#                                      filter.raster = filter.raster,
+#                                      seed.val = NULL)
+# 
+#   
+#   single.models <- MS_Modeling(formated.data,
+#                                modeling.id = modeling.id,
+#                                models = models,
+#                                params.CV = params.CV,
+#                                params.OPT = params.OPT,
+#                                weights = weights,
+#                                prevalence = prevalence,
+#                                metric.eval = metric.eval,
+#                                var.import = var.import,
+#                                scale.models = FALSE,
+#                                nb.cpu = nb.cpu,
+#                                seed.val = NULL)
+#   
+#   ### petit gros problème 
+#   params.EM <- .inversion_species_params(params.EM)
+#   em.models <- MS_EnsembleModeling(single.models,
+#                                    models.chosen = params.EM$models.chosen,
+#                                    em.by = params.EM$em.by,
+#                                    em.algo = em.algo,
+#                                    metric.select = params.EM$metric.select,
+#                                    metric.select.thresh = params.EM$metric.select.thresh,
+#                                    metric.select.table = params.EM$metric.select.table,
+#                                    metric.select.dataset = params.EM$metric.select.dataset,
+#                                    metric.eval = metric.eval,
+#                                    var.import = var.import,
+#                                    EMci.alpha = params.EM$EMci.alpha,
+#                                    EMwmean.decay = params.EM$EMwmean.decay,
+#                                    nb.cpu = nb.cpu,
+#                                    seed.val = NULL)
+#   
+#   return(list("formated.data" = formated.data,
+#               "single.models" = single.models,
+#               "ensemble.models" = em.models))
+# })
 
 
 # ---------------------------------------------------------------------------- #

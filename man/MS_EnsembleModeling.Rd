@@ -22,6 +22,9 @@ MS_EnsembleModeling(
 )
 }
 \arguments{
+\item{ms.mod}{a \code{\link{MS.models.out}} object returned by the
+\code{\link{MS_Modeling}} function}
+
 \item{models.chosen}{a \code{vector} containing model names to be kept, must be either
 \code{all} or a sub-selection of model names that can be obtained with the
 \code{\link{get_built_models}} function}
@@ -82,12 +85,6 @@ parallelize the single models predictions and the ensemble models computation}
 
 \item{seed.val}{(\emph{optional, default} \code{NULL}) \cr
 An \code{integer} value corresponding to the new seed value to be set}
-
-\item{bm.mod}{a \code{\link{MS.models.out}} object returned by the
-\code{\link{MS_Modeling}} function}
-
-\item{do.progress}{(\emph{optional, default} \code{TRUE}) \cr
-A \code{logical} value defining whether the progress bar is to be rendered or not}
 }
 \value{
 A \code{\link{MS.ensemble.models.out}} object acting as a proxi for the created \code{BIOMOD.ensemble.models.out}.

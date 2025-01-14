@@ -54,6 +54,9 @@
 ##' 
 ##' @param params.PA a \code{list} with the species names associated to the parameters of PA
 ##' 
+##' @param single.formated.data a \code{BIOMOD.formated.data} object to add to the MS.formated.data object
+##' @param ms.formated.data a \code{MS.formated.data} object already created which you want to add some species
+##' 
 ##' @param filter.raster (\emph{optional, default} \code{FALSE}) \cr 
 ##' If \code{expl.var} is of raster type, a \code{logical} value defining whether \code{resp.var} 
 ##' is to be filtered when several points occur in the same raster cell
