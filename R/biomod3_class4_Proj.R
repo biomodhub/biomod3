@@ -99,6 +99,7 @@ setClass("MS.projection.out",
 ##' @rdname MS.projection.out
 ##' @export
 ##' @importFrom terra global
+##' @importFrom ggplot2 geom_point
 ##' @param maxcell maximum number of cells to plot. Argument transmitted to \code{\link[terra]{plot}}.
 ##' 
 
@@ -115,14 +116,14 @@ setMethod('plot', signature(x = 'MS.projection.out', y = "missing"),
           {
             # extraction of projection happens in argument check
             args <- .plot.MS.projection.out.check.args(x,
-                                                           coord = coord,
-                                                           plot.output = plot.output, # list or facet
-                                                           do.plot = do.plot,
-                                                           std = std,
-                                                           scales = scales,
-                                                           size = size,
-                                                           maxcell = maxcell,
-                                                           ...)
+                                                       coord = coord,
+                                                       plot.output = plot.output, # list or facet
+                                                       do.plot = do.plot,
+                                                       std = std,
+                                                       scales = scales,
+                                                       size = size,
+                                                       maxcell = maxcell,
+                                                       ...)
             for (argi in names(args)) { assign(x = argi, value = args[[argi]]) }
             rm(args)
             

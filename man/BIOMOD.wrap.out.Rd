@@ -9,6 +9,9 @@
 \usage{
 \S4method{show}{BIOMOD.wrap.out}(object)
 }
+\arguments{
+\item{object}{a \code{\link{BIOMOD.wrap.out}} object}
+}
 \description{
 Class returned by \code{\link{BIOMOD_Wrap}}, and used by
 \code{\link{BIOMOD_ProjectionWrap}}

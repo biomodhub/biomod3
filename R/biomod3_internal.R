@@ -123,6 +123,7 @@
 ##' @param x SpatRaster to be checked
 ##' @return a boolean
 ##' @keywords internal
+##' @importFrom terra values
 
 rast.has.values <- function(x)
 {
@@ -502,6 +503,7 @@ rast.has.values <- function(x)
 
 ##' 
 ##' @importFrom terra rast classify subset
+##' @importFrom biomod2 predict
 ##' 
 
 .run_pred <- function(object, Prev = 0.5, dat, mod.name = NULL)
@@ -547,6 +549,10 @@ rast.has.values <- function(x)
 
 ## Get formal predictions for ensemble models
 ## used in biomod2_classes_5
+
+##' 
+##' @importFrom biomod2 predict
+##' 
 .get_formal_predictions <- function(object, newdata, on_0_1000, seedval)
 {
   # make prediction of all models required
@@ -606,43 +612,43 @@ rast.has.values <- function(x)
 
 ## CHOOSE the optimized cutoff between each ordinal variables
 ## used in bm_RunModelsLoop, bm_Tuning
-.threshold_ordinal <- function(obs, fit, metric.eval)
-{
-  nlevels <- length(levels(obs))
-  
-  #manage extremum
-  fit[fit < 1] <- 1
-  fit[fit > nlevels] <- nlevels
-  
-  #Define all the possibility
-  seq <- list(seq(0.2, 0.8, by = 0.1))
-  possibility <- rep(seq, nlevels-1)
-  names(possibility) <- paste0("Threshold_", 1:(nlevels-1))
-  grid <- expand.grid(possibility)
-  
-  test_seq <- foreach(i = 1:nrow(grid), .combine = rbind) %do%
-    {
-      fit_factor <- fit
-      for (j in 1:(nlevels - 1)) {
-        fit_factor[fit_factor <= j + grid[i, j] & fit_factor >= j ] <- j
-        fit_factor[fit_factor > j + grid[i, j] & fit_factor < j+1 ] <- j+1
-      }
-      stat <- bm_CalculateStatAbun(metric.eval, obs, fit_factor)
-      return(data.frame(grid[i, ], "stat" = stat))
-    }
-  
-  max <- test_seq[test_seq$stat == max(test_seq$stat), ]
-  limits <- colMeans(max) #several maximum !?!
-  
-  fit_factor <- fit
-  for (j in 1:(nlevels - 1)) {
-    fit_factor[fit_factor <= j + limits[j] & fit_factor >= j ] <- j
-    fit_factor[fit_factor > j + limits[j] & fit_factor < j + 1 ] <- j + 1
-  }
-  
-  levels <- 1:length(levels(obs))
-  names(levels) <- levels(obs)
-  fit_factor <- factor(fit_factor, levels = levels, ordered = TRUE)
-  
-  return(list(limits = limits, fit_factor = fit_factor))
-}
+# .threshold_ordinal <- function(obs, fit, metric.eval)
+# {
+#   nlevels <- length(levels(obs))
+#   
+#   #manage extremum
+#   fit[fit < 1] <- 1
+#   fit[fit > nlevels] <- nlevels
+#   
+#   #Define all the possibility
+#   seq <- list(seq(0.2, 0.8, by = 0.1))
+#   possibility <- rep(seq, nlevels-1)
+#   names(possibility) <- paste0("Threshold_", 1:(nlevels-1))
+#   grid <- expand.grid(possibility)
+#   
+#   test_seq <- foreach(i = 1:nrow(grid), .combine = rbind) %do%
+#     {
+#       fit_factor <- fit
+#       for (j in 1:(nlevels - 1)) {
+#         fit_factor[fit_factor <= j + grid[i, j] & fit_factor >= j ] <- j
+#         fit_factor[fit_factor > j + grid[i, j] & fit_factor < j+1 ] <- j+1
+#       }
+#       stat <- bm_CalculateStatAbun(metric.eval, obs, fit_factor)
+#       return(data.frame(grid[i, ], "stat" = stat))
+#     }
+#   
+#   max <- test_seq[test_seq$stat == max(test_seq$stat), ]
+#   limits <- colMeans(max) #several maximum !?!
+#   
+#   fit_factor <- fit
+#   for (j in 1:(nlevels - 1)) {
+#     fit_factor[fit_factor <= j + limits[j] & fit_factor >= j ] <- j
+#     fit_factor[fit_factor > j + limits[j] & fit_factor < j + 1 ] <- j + 1
+#   }
+#   
+#   levels <- 1:length(levels(obs))
+#   names(levels) <- levels(obs)
+#   fit_factor <- factor(fit_factor, levels = levels, ordered = TRUE)
+#   
+#   return(list(limits = limits, fit_factor = fit_factor))
+# }

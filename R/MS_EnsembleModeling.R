@@ -79,7 +79,7 @@
 ##' @family Main functions
 ##' 
 ##' @importFrom foreach foreach %do%
-##' @importFrom biomod2 BIOMOD_Modeling
+##' @importFrom biomod2 BIOMOD_EnsembleModeling
 ##' 
 ##' @export
 ##' 

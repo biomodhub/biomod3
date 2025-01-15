@@ -94,9 +94,6 @@ not}
 
 \seealso{
 \code{\link{BIOMOD_Projection}}, \code{\link{BIOMOD_EnsembleForecasting}}
-
-Other Toolbox objects: 
-\code{\link{MS.ensemble.models.out}}
 }
 \author{
 Damien Georges

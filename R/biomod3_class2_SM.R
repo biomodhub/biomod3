@@ -8,6 +8,26 @@
 ##' 
 ##' @title \code{MS_Modeling()} output object class
 ##' 
+##' @slot ms.project a \code{character} corresponding to the name of 
+##'   the multispecies project
+##' @slot modeling.id a \code{character} corresponding to the name (ID) of the
+##'   simulation set
+##' @slot dir.name a \code{character} corresponding to the modeling folder
+##' @slot sp.name a \code{character vector} corresponding to the species name
+##' @slot data.type a \code{character} corresponding to the data type
+##' @slot expl.var.names a \code{vector} containing names of explanatory
+##'   variables
+##' @slot models.computed a \code{vector} containing names of computed models
+##' @slot models.failed a \code{vector} containing names of failed models
+##' @slot has.evaluation.data a \code{logical} value defining whether evaluation
+##'   data is given
+##' @slot scale.models a \code{logical} value defining whether models have been
+##'   rescaled or not
+##' @slot link a \code{character} containing the file name of the saved object
+##' 
+##' @param object a \code{\link{MS.models.out}} object
+##' 
+##' @rdname MS.models.out
 ##' @export
 
 setClass("MS.models.out",
@@ -120,6 +140,8 @@ setClass("BIOMOD.stored.ms.models.out",
 ##' as a long \code{data.frame} with many additional informations readily 
 ##' available.
 ##' @param ... additional parameters
+##' 
+##' @importFrom biomod2 load_stored_object
 
 setGeneric("get_species_data", function(obj, ...) { standardGeneric("get_species_data") }) ## 012
 setGeneric("get_eval_data", function(obj, ...) { standardGeneric("get_eval_data") }) ## 012

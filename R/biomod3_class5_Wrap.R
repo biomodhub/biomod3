@@ -17,6 +17,8 @@
 ##' @slot ensemble.models a \code{BIOMOD.ensemble.models.out} object
 ##' @slot output a \code{character} link to the output file
 ##' 
+##' @param object a \code{\link{BIOMOD.wrap.out}} object
+##' 
 ##' 
 ##' @rdname BIOMOD.wrap.out
 ##' @export

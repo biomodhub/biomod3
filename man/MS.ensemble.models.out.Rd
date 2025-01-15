@@ -9,6 +9,9 @@
 \usage{
 \S4method{show}{MS.ensemble.models.out}(object)
 }
+\arguments{
+\item{object}{a \code{\link{MS.ensemble.models.out}} object}
+}
 \description{
 Class returned by \code{\link{BIOMOD_EnsembleModeling}}, and used by
 \code{\link{BIOMOD_LoadModels}}, \code{\link{BIOMOD_PresenceOnly}} and
@@ -48,16 +51,6 @@ been combined to build the ensemble models, must be among
 \item{\code{link}}{a \code{character} containing the file name of the saved object}
 }}
 
-\seealso{
-\code{\link{BIOMOD_EnsembleModeling}}, \code{\link{BIOMOD_LoadModels}},
-\code{\link{BIOMOD_PresenceOnly}}, \code{\link{bm_VariablesImportance}},
-\code{\link{bm_PlotEvalMean}}, \code{\link{bm_PlotEvalBoxplot}},
-\code{\link{bm_PlotVarImpBoxplot}}, \code{\link{bm_PlotResponseCurves}}
-
-Other Toolbox objects: 
-\code{\link{MS.projection.out}}
-}
 \author{
 Damien Georges
 }
-\concept{Toolbox objects}

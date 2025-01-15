@@ -184,6 +184,25 @@ A \code{list} with the differents set of parameters fo all the species of resp.n
 \description{
 This function allows to create the differents parameters list for all the species in the same time.
 }
+\examples{
+library(biomod2)
+data(DataSpecies)
+names(DataSpecies)
+
+sp_parameters <- bm_SpeciesParameters(resp.name = names(DataSpecies)[3:8],
+                                      PA.nb.rep = 3, 
+                                      PA.nb.absences = c(100,200,500), 
+                                      PA.strategy = "random",
+                                      CV.nb.rep = 1, 
+                                      CV.strategy = 'kfold', 
+                                      CV.k = 3,
+                                      OPT.strategy = 'bigboss',
+                                      models.chosen = "all",
+                                      metric.select = 'TSS', 
+                                      metric.select.thresh = 0.7)
+
+
+}
 \author{
 Helene Blancheteau
 }

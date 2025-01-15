@@ -126,6 +126,8 @@ estimate variable importance}
 must be among \code{'EMmean'}, \code{'EMmedian'}, \code{'EMcv'}, \code{'EMci'},
 \code{'EMca'}, \code{'EMwmean'}}
 
+\item{params.EM}{a \code{list} with the species names associated to the parameters for the ensemble models. See BIOMOD_EnsembleModeling}
+
 \item{seed.val}{(\emph{optional, default} \code{NULL}) \cr
 An \code{integer} value corresponding to the new seed value to be set}
 

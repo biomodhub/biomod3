@@ -81,6 +81,8 @@
 ##' 
 ##' @importFrom biomod2 BIOMOD_FormatingData
 ##' @importFrom foreach foreach %do%
+##' @importFrom methods .hasSlot
+##' @importFrom utils packageVersion
 ##' 
 ##' @export
 ##' 
@@ -243,6 +245,10 @@ MS_FormatingData <- function(ms.project.name,
 
 
 # Add BIOMOD.formated.data to a MS.formated.data ------------------------------
+
+##' 
+##' @importFrom methods .hasSlot
+##' 
 
 MS_AddData <- function(MS.format, bm.format){
   # Ajouter check si on ouvre cette fonction

@@ -33,12 +33,7 @@
 ##' @slot em.models_kept a \code{list} containing single models for each ensemble model
 ##' @slot link a \code{character} containing the file name of the saved object
 ##' 
-##' 
-##' @seealso \code{\link{BIOMOD_EnsembleModeling}}, \code{\link{BIOMOD_LoadModels}}, 
-##' \code{\link{BIOMOD_PresenceOnly}}, \code{\link{bm_VariablesImportance}}, 
-##' \code{\link{bm_PlotEvalMean}}, \code{\link{bm_PlotEvalBoxplot}}, 
-##' \code{\link{bm_PlotVarImpBoxplot}}, \code{\link{bm_PlotResponseCurves}}
-##' @family Toolbox objects
+##' @param object a \code{\link{MS.ensemble.models.out}} object
 ##' 
 ##' 
 ##' @rdname MS.ensemble.models.out

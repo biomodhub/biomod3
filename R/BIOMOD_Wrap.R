@@ -84,6 +84,7 @@
 ##' @param params.PA a \code{list} with the species names associated to the parameters of PA
 ##' @param params.CV a \code{list} with the species names associated to the parameters of Cross-Validation. See BIOMOD_Modeling
 ##' @param params.OPT a \code{list} with the species names associated to the options of the algorithms. See BIOMOD_Modeling
+##' @param params.EM a \code{list} with the species names associated to the parameters for the ensemble models. See BIOMOD_EnsembleModeling
 ##' 
 ##' @param filter.raster (\emph{optional, default} \code{FALSE}) \cr 
 ##' If \code{expl.var} is of raster type, a \code{logical} value defining whether \code{resp.var} 
@@ -154,7 +155,7 @@
 ##' 
 ##' 
 ##' @importFrom foreach foreach %do%
-##' @importFrom biomod2 BIOMOD_Modeling
+##' @importFrom biomod2 BIOMOD_FormatingData BIOMOD_Modeling BIOMOD_EnsembleModeling
 ##' 
 ##' @export
 ##' 

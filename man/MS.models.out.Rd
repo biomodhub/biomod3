@@ -8,9 +8,43 @@
 \usage{
 \S4method{show}{MS.models.out}(object)
 }
+\arguments{
+\item{object}{a \code{\link{MS.models.out}} object}
+}
 \description{
 \code{MS_Modeling()} output object class
 }
+\section{Slots}{
+
+\describe{
+\item{\code{ms.project}}{a \code{character} corresponding to the name of
+the multispecies project}
+
+\item{\code{modeling.id}}{a \code{character} corresponding to the name (ID) of the
+simulation set}
+
+\item{\code{dir.name}}{a \code{character} corresponding to the modeling folder}
+
+\item{\code{sp.name}}{a \code{character vector} corresponding to the species name}
+
+\item{\code{data.type}}{a \code{character} corresponding to the data type}
+
+\item{\code{expl.var.names}}{a \code{vector} containing names of explanatory
+variables}
+
+\item{\code{models.computed}}{a \code{vector} containing names of computed models}
+
+\item{\code{models.failed}}{a \code{vector} containing names of failed models}
+
+\item{\code{has.evaluation.data}}{a \code{logical} value defining whether evaluation
+data is given}
+
+\item{\code{scale.models}}{a \code{logical} value defining whether models have been
+rescaled or not}
+
+\item{\code{link}}{a \code{character} containing the file name of the saved object}
+}}
+
 \author{
 Hélène Blancheteau
 }

@@ -108,8 +108,8 @@ setClass("MS.formated.data",
 ##' @return a \code{list} with the data used to generate the plot and a
 ##' \code{ggplot2} object 
 ##' 
-##' @importFrom terra rast minmax crds ext
-##' @importFrom ggplot2 ggplot aes scale_color_manual scale_shape_manual scale_fill_manual guides xlim ylim ggtitle facet_wrap theme guide_legend after_stat
+##' @importFrom terra rast minmax crds ext rasterize
+##' @importFrom ggplot2 ggplot aes scale_color_manual scale_shape_manual scale_fill_manual guides xlim ylim ggtitle facet_wrap theme guide_legend after_stat xlab ylab element_blank element_rect geom_point
 ##' 
 ##' @export
 
