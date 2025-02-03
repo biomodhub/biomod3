@@ -4,6 +4,7 @@
 ## -------------------------------------------------------------------------- #
 
 ##' @name MS.models.out
+##' @aliases MS.models.out-class
 ##' @author Hélène Blancheteau
 ##' 
 ##' @title \code{MS_Modeling()} output object class
@@ -141,7 +142,9 @@ setClass("BIOMOD.stored.ms.models.out",
 ##' available.
 ##' @param ... additional parameters
 ##' 
-##' @importFrom biomod2 load_stored_object
+##' @importFrom biomod2 load_stored_object get_options
+##' @importMethodsFrom biomod2 get_species_data get_eval_data get_options get_calib_lines get_projected_models free get_predictions get_kept_models get_formal_data get_built_models get_evaluations get_variables_importance
+##' 
 
 setGeneric("get_species_data", function(obj, ...) { standardGeneric("get_species_data") }) ## 012
 setGeneric("get_eval_data", function(obj, ...) { standardGeneric("get_eval_data") }) ## 012
@@ -182,10 +185,12 @@ setMethod('show', signature('MS.models.out'), function(object) {
 ## get_options.MS.models.out ---------------------------------------------------
 ##' 
 ##' @rdname getters.out
+##' @importFrom biomod2 get_options
+##' @importMethodsFrom biomod2 get_options
 ##' @export
 ##' 
 
-setMethod("get_options", "MS.models.out", function(obj, sp) {
+setMethod("get_options", signature("MS.models.out"), function(obj, sp) {
   nameFolder <- file.path(obj@dir.name, sp)
   model <- get(load(file.path(nameFolder, paste0(sp,".", obj@modeling.id, ".models.out"))))
   model_options <- load_stored_object(model@models.options) 

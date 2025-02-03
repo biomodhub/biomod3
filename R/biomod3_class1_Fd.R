@@ -464,6 +464,10 @@ setMethod('show', signature('MS.formated.data'),
 )
 
 
+##' 
+##' @importMethodsFrom biomod2 summary
+##'
+
 setMethod('summary', signature(object = 'MS.formated.data'),
           function(object, calib.lines = NULL) {
             nameFolder <- file.path(object@dir.name, object@ms.project, ".BIOMOD_DATA", "single.formated.data")

@@ -152,6 +152,17 @@ MS_Projection <- function(ms.mod,
   for (argi in names(args)) { assign(x = argi, value = args[[argi]]) }
   rm(args)
   
+  if (nb.cpu > 1) {
+    if (.getOS() != "windows") {
+      if (!isNamespaceLoaded("doParallel")) {
+        if(!requireNamespace('doParallel', quietly = TRUE)) stop("Package 'doParallel' not found")
+      }
+      doParallel::registerDoParallel(cores = nb.cpu)
+    } else {
+      warning("Parallelisation with `foreach` is not available for Windows. Sorry.")
+    }
+  }
+  
   
   ## 1. Create output object ----------------------------------------------------------------------
   proj_out <- new('MS.projection.out',
@@ -168,7 +179,7 @@ MS_Projection <- function(ms.mod,
   
   
   cat("\n")
-  workflow <- foreach(sp = ms.mod@sp.name) %do% {
+  workflow <- foreach(sp = ms.mod@sp.name) %dopar% {
     cat("\n\t Projection of", sp)
     # 1. Récupération ms.mod 
     bm.mod <- get(load(file.path(ms.mod@dir.name, sp, paste0(sp, ".", ms.mod@modeling.id,".models.out"))))

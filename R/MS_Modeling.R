@@ -49,7 +49,7 @@
 ##' 
 ##' A \code{\link{MS.models.out}} object acting as a proxi for the created \code{BIOMOD.models.out}.
 ##' 
-##' @importFrom foreach foreach %do%
+##' @importFrom foreach foreach %do% %dopar%
 ##' @importFrom biomod2 BIOMOD_Modeling
 ##' 
 ##' @export
@@ -89,6 +89,17 @@ MS_Modeling <- function(ms.format,
   for (argi in names(args)) { assign(x = argi, value = args[[argi]]) }
   rm(args)
   
+  if (nb.cpu > 1) {
+    if (.getOS() != "windows") {
+      if (!isNamespaceLoaded("doParallel")) {
+        if(!requireNamespace('doParallel', quietly = TRUE)) stop("Package 'doParallel' not found")
+      }
+      doParallel::registerDoParallel(cores = nb.cpu)
+    } else {
+      warning("Parallelisation with `foreach` is not available for Windows. Sorry.")
+    }
+  }
+  
   MSmodels<- new(
     'MS.models.out',
     ms.project = ms.format@ms.project,
@@ -106,7 +117,7 @@ MS_Modeling <- function(ms.format,
   
   dir.name <- file.path(ms.format@dir.name, ms.format@ms.project)
   
-  workflow <- foreach(sp = ms.format@sp.name) %do% {
+  workflow <- foreach(sp = ms.format@sp.name) %dopar% {
     cat("\n\t Modeling of", sp)
     # 1. Récupération ms.format 
     sfd <- get(load(file.path(nameFolder, paste0(sp,".sfd"))))

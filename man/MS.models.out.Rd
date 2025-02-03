@@ -3,6 +3,7 @@
 \docType{class}
 \name{MS.models.out}
 \alias{MS.models.out}
+\alias{MS.models.out-class}
 \alias{show,MS.models.out-method}
 \title{\code{MS_Modeling()} output object class}
 \usage{

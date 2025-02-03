@@ -118,9 +118,7 @@ MS_FormatingData <- function(ms.project.name,
   nameFolder <- file.path(dir.name, ms.project.name, ".BIOMOD_DATA", "single.formated.data")
   
   ## 3.Create MS.formated.data with the data frame
-  # Est ce que je fais un truc dataframe -> direct MS ou 
-  # est ce que je complete 
-  new.formated.data <- foreach(sp = resp.name) %do% {
+  new.formated.data <- foreach(sp = resp.name) %do% { ## No parallelisation as it is really quick but can be add if necessary ? 
 
     parameters <- params.PA[[sp]]
     

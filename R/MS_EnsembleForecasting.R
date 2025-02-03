@@ -9,15 +9,17 @@
 ##' represent new areas, resolution or time scales for example}).
 ##' 
 ##' 
-##' @param ms.mod a \code{\link{BIOMOD.models.out}} object returned by the 
+##' @param ms.em a \code{\link{BIOMOD.models.out}} object returned by the 
 ##' \code{\link{BIOMOD_Modeling}} function
+##' @param ms.proj a \code{\link{MS.projection.out}} object returned by the 
+##' \code{\link{MS_Projection}} function
 ##' @param proj.name a \code{character} corresponding to the name (ID) of the projection set 
 ##' (\emph{a new folder will be created within the simulation folder with this name})
 ##' @param new.env A \code{matrix}, \code{data.frame} or
 ##'  \code{\link[terra:rast]{SpatRaster}} object containing the new 
 ##' explanatory variables (in columns or layers, with names matching the
 ##'  variables names given to the \code{\link{BIOMOD_FormatingData}} function to build 
-##' \code{ms.mod}) that will be used to project the species distribution model(s)
+##' \code{ms.em}) that will be used to project the species distribution model(s)
 ##' \cr \emph{Note that old format from \pkg{raster} are still supported such as 
 ##' \code{RasterStack} objects. }
 ##' 
@@ -33,14 +35,14 @@
 ##' A \code{vector} containing evaluation metric names to be used to transform prediction values 
 ##' into binary values based on models evaluation scores obtained with the 
 ##' \code{\link{BIOMOD_Modeling}} function. Must be among \code{all} (same evaluation metrics than 
-##' those of \code{ms.mod}) or \code{POD}, \code{FAR}, \code{POFD}, \code{SR}, \code{ACCURACY}, 
+##' those of \code{ms.em}) or \code{POD}, \code{FAR}, \code{POFD}, \code{SR}, \code{ACCURACY}, 
 ##' \code{BIAS}, \code{ROC}, \code{TSS}, \code{KAPPA}, \code{OR}, \code{ORSS}, \code{CSI}, 
 ##' \code{ETS}, \code{BOYCE}, \code{MPA}
 ##' @param metric.filter (\emph{optional, default} \code{NULL}) \cr 
 ##' A \code{vector} containing evaluation metric names to be used to transform prediction values 
 ##' into filtered values based on models evaluation scores obtained with the 
 ##' \code{\link{BIOMOD_Modeling}} function. Must be among \code{all} (same evaluation metrics than 
-##' those of \code{ms.mod}) or \code{POD}, \code{FAR}, \code{POFD}, \code{SR}, \code{ACCURACY}, 
+##' those of \code{ms.em}) or \code{POD}, \code{FAR}, \code{POFD}, \code{SR}, \code{ACCURACY}, 
 ##' \code{BIAS}, \code{ROC}, \code{TSS}, \code{KAPPA}, \code{OR}, \code{ORSS}, \code{CSI}, 
 ##' \code{ETS}, \code{BOYCE}, \code{MPA}
 ##' 
@@ -131,60 +133,79 @@
 ##' 
 ###################################################################################################
 
-MS_EnsembleForecasting <- function(ms.mod,
-                          proj.name,
-                          new.env,
-                          new.env.xy = NULL,
-                          models.chosen = 'all',
-                          metric.binary = NULL,
-                          metric.filter = NULL,
-                          compress = TRUE,
-                          digits = 0,
-                          build.clamping.mask = TRUE,
-                          nb.cpu = 1,
-                          seed.val = NULL,
-                          ...) {
+MS_EnsembleForecasting <- function(ms.em,
+                                   ms.proj = NULL,
+                                   proj.name,
+                                   new.env,
+                                   new.env.xy = NULL,
+                                   models.chosen = 'all',
+                                   metric.binary = NULL,
+                                   metric.filter = NULL,
+                                   compress = TRUE,
+                                   digits = 0,
+                                   build.clamping.mask = TRUE,
+                                   nb.cpu = 1,
+                                   seed.val = NULL,
+                                   ...) {
   .bm_cat("Do Ensemble Models Projection")
   
   ## 0. Check arguments ---------------------------------------------------------------------------
-  args <- .MS_EnsembleForecasting.check.args(ms.mod, proj.name, new.env, new.env.xy
+  args <- .MS_EnsembleForecasting.check.args(ms.em, ms.proj, proj.name, new.env, new.env.xy
                                     , models.chosen, metric.binary, metric.filter, compress, seed.val, ...)
   for (argi in names(args)) { assign(x = argi, value = args[[argi]]) }
   rm(args)
   
   
+  if (nb.cpu > 1) {
+    if (.getOS() != "windows") {
+      if (!isNamespaceLoaded("doParallel")) {
+        if(!requireNamespace('doParallel', quietly = TRUE)) stop("Package 'doParallel' not found")
+      }
+      doParallel::registerDoParallel(cores = nb.cpu)
+    } else {
+      warning("Parallelisation with `foreach` is not available for Windows. Sorry.")
+    }
+  }
+  
   ## 1. Create output object ----------------------------------------------------------------------
   proj_out <- new('MS.projection.out',
                   proj.name = proj.name,
-                  dir.name = ms.mod@dir.name,
-                  sp.name =  ms.mod@sp.name,
-                  expl.var.names = ms.mod@expl.var.names,
+                  dir.name = ms.em@dir.name,
+                  sp.name =  ms.em@sp.name,
+                  expl.var.names = ms.em@expl.var.names,
                   models.projected = models.chosen,
                   coord = new.env.xy,
-                  data.type = ms.mod@data.type,
-                  modeling.id = ms.mod@modeling.id,
+                  data.type = ms.em@data.type,
+                  modeling.id = ms.em@modeling.id,
                   type = "em")
   
   
   cat("\n")
-  workflow <- foreach(sp = ms.mod@sp.name) %do% {
+  workflow <- foreach(sp = ms.em@sp.name) %dopar% {
     cat("\n\t Projection of", sp)
-    # 1. Récupération ms.mod 
-    bm.em <- get(load(file.path(ms.mod@dir.name, sp, paste0(sp, ".", ms.mod@modeling.id,".ensemble.models.out"))))
+    # 1. Récupération ms.em 
+    
+    bm.em <- get(load(file.path(ms.em@dir.name, sp, paste0(sp, ".", ms.em@modeling.id,".ensemble.models.out"))))
+    if (!is.null(ms.proj)){
+      bm.proj = get(load(file.path(ms.proj@dir.name, sp, paste0("proj_", ms.proj@proj.name), paste0(sp, ".",  ms.proj@proj.name,".projection.out"))))
+    } else  {
+      bm.proj = NULL
+    }
     
     models.chosen.sp <- models.chosen[[sp]]
     # 2. Run MS_EnsembleModeling
     output <- capture.output(proj_sp <- BIOMOD_EnsembleForecasting(bm.em,
-                                                          proj.name = proj.name,
-                                                          new.env = new.env,
-                                                          new.env.xy = new.env.xy,
-                                                          models.chosen = models.chosen.sp,
-                                                          metric.binary = metric.binary,
-                                                          metric.filter = metric.filter,
-                                                          compress = TRUE,
-                                                          build.clamping.mask = TRUE,
-                                                          nb.cpu = 1,
-                                                          seed.val = NULL))
+                                                                   bm.proj = bm.proj,
+                                                                   proj.name = proj.name,
+                                                                   new.env = new.env,
+                                                                   new.env.xy = new.env.xy,
+                                                                   models.chosen = models.chosen.sp,
+                                                                   metric.binary = metric.binary,
+                                                                   metric.filter = metric.filter,
+                                                                   compress = TRUE,
+                                                                   build.clamping.mask = TRUE,
+                                                                   nb.cpu = 1,
+                                                                   seed.val = NULL))
     models.chosen[[sp]] <- proj_sp@models.projected
     
   }
@@ -196,24 +217,37 @@ MS_EnsembleForecasting <- function(ms.mod,
 
 # .MS_EnsembleForecasting.check.args---------------------------------------------
 
-.MS_EnsembleForecasting.check.args <- function(ms.mod, proj.name, new.env, new.env.xy,
+.MS_EnsembleForecasting.check.args <- function(ms.em, ms.proj, proj.name, new.env, new.env.xy,
                                       models.chosen, metric.binary, metric.filter, compress, seed.val, ...)
 {
   args <- list(...)
   
-  ## 1. Check ms.mod ----------------------------------------------------------
-  .fun_testIfInherits(TRUE, "ms.mod", ms.mod, "MS.ensemble.models.out")
+  ## 1. Check ms.em ----------------------------------------------------------
+  .fun_testIfInherits(TRUE, "ms.em", ms.em, "MS.ensemble.models.out")
   
   ## 2. Check proj.name -------------------------------------------------------
-  if (is.null(proj.name)) {
-    stop("\nYou must define a name for Projection Outputs")
-  } 
+  if (!length(proj.name) && !length(ms.proj)) {
+    stop("You have to give a valid 'proj.name' if you don't work with ms.proj")
+  } else if (!length(proj.name)) {
+    proj.name <- ms.proj@proj.name
+  }
   
-  ## 3. Check new.env ---------------------------------------------------------
+  
+  ## 3. Check needed data and predictions -------------------------------------
+  if ((is.null(ms.proj) && is.null(new.env)) ||
+      (!is.null(ms.proj) & !is.null(new.env))) {
+    stop("You have to refer at one of 'ms.proj' or 'new.env' argument")
+  }
+  
+  if (!is.null(ms.proj)) {
+    .fun_testIfInherits(TRUE, "ms.proj", ms.proj, "MS.projection.out")
+  }
+  
+  ## 3.bis Check new.env ---------------------------------------------------------
   .fun_testIfInherits(TRUE, "new.env", new.env, c('matrix', 'data.frame', 'SpatRaster','Raster'))
   
   if (inherits(new.env, 'matrix')) {
-    if (any(sapply(get_formal_data(ms.mod, sp = ms.mod@sp.name[1], "expl.var"), is.factor))) {
+    if (any(sapply(get_formal_data(ms.em, sp = ms.em@sp.name[1], "expl.var"), is.factor))) {
       stop("new.env cannot be given as matrix when model involves categorical variables")
     }
     new.env <- data.frame(new.env)
@@ -226,7 +260,7 @@ MS_EnsembleForecasting <- function(ms.mod,
     # conversion into SpatRaster
     if (any(raster::is.factor(new.env))) {
       new.env <- .categorical_stack_to_terra(raster::stack(new.env),
-                                             expected_levels = head(get_formal_data(ms.mod, sp = ms.mod@sp.name[1], subinfo = "expl.var"))
+                                             expected_levels = head(get_formal_data(ms.em, sp = ms.em@sp.name[1], subinfo = "expl.var"))
       )
     } else {
       new.env <- rast(new.env)
@@ -234,19 +268,29 @@ MS_EnsembleForecasting <- function(ms.mod,
   }
   
   if (inherits(new.env, 'SpatRaster')) {
-    .fun_testIfIn(TRUE, "names(new.env)", names(new.env), ms.mod@expl.var.names, exact = TRUE)
-    new.env <- new.env[[ms.mod@expl.var.names]]
+    .fun_testIfIn(TRUE, "names(new.env)", names(new.env), ms.em@expl.var.names, exact = TRUE)
+    new.env <- new.env[[ms.em@expl.var.names]]
     new.env.mask <- .get_data_mask(new.env, value.out = 1)
     new.env <- mask(new.env, new.env.mask)
   } else {
-    .fun_testIfIn(TRUE, "colnames(new.env)", colnames(new.env), ms.mod@expl.var.names, exact = TRUE)
-    new.env <- new.env[ , ms.mod@expl.var.names, drop = FALSE]
+    .fun_testIfIn(TRUE, "colnames(new.env)", colnames(new.env), ms.em@expl.var.names, exact = TRUE)
+    new.env <- new.env[ , ms.em@expl.var.names, drop = FALSE]
   }
   
   which.factor <- which(sapply(new.env, is.factor))
   if (length(which.factor) > 0) {
     new.env <- .check_env_levels(new.env, 
-                                 expected_levels = head(get_formal_data(ms.mod, sp = ms.mod@sp.name[1], subinfo = "expl.var")))
+                                 expected_levels = head(get_formal_data(ms.em, sp = ms.em@sp.name[1], subinfo = "expl.var")))
+  }
+  
+  ## 4. Check models.chosen ---------------------------------------------------
+  if (models.chosen[1] == 'all') {
+    models.chosen <- get_built_models(ms.em)
+  } else {
+    models.chosen <- intersect(models.chosen, get_built_models(ms.em))
+  }
+  if (length(models.chosen) < 1) {
+    stop('No models selected')
   }
   
   ## 4. Check new.env.xy ------------------------------------------------------
@@ -258,10 +302,11 @@ MS_EnsembleForecasting <- function(ms.mod,
   } else {
     new.env.xy = data.frame()
   }
+  
   ## 5. Check models.chosen ---------------------------------------------------
   if ( is.null(models.chosen) | (length(models.chosen) == 1 && models.chosen[1] == 'all')) {
-    models.chosen <- as.list(rep("all", length(ms.mod@sp.name)))
-    names(models.chosen) <- ms.mod@sp.name
+    models.chosen <- as.list(rep("all", length(ms.em@sp.name)))
+    names(models.chosen) <- ms.em@sp.name
   } else {
     .fun_testIfInherits(TRUE, "models.chosen", models.chosen, "list")
   }
@@ -272,12 +317,12 @@ MS_EnsembleForecasting <- function(ms.mod,
   
   ## 6. Check metric.binary & metric.filter -----------------------------------
   if (!is.null(metric.binary) | !is.null(metric.filter)) {
-    if ( ms.mod@data.type != "binary"){
-      cat ("No metric.binary or metric.filter are needed with",ms.mod@data.type, "data")
+    if ( ms.em@data.type != "binary"){
+      cat ("No metric.binary or metric.filter are needed with",ms.em@data.type, "data")
       metric.binary <- NULL
       metric.filter <- NULL
     } else {
-      models.evaluation <- get_evaluations(ms.mod, sp = ms.mod@sp.name[1])
+      models.evaluation <- get_evaluations(ms.em, sp = ms.em@sp.name[1])
       if (is.null(models.evaluation)) {
         warning("Binary and/or Filtered transformations of projection not ran because of models evaluation information missing")
       } else {
@@ -347,7 +392,7 @@ MS_EnsembleForecasting <- function(ms.mod,
   ## 10.on_0_1000 --------------------------------
   
   on_0_1000 <- ifelse(is.null(args$on_0_1000), TRUE, args$on_0_1000)
-  if (ms.mod@data.type %in% c("count","abundance","ordinal")) {on_0_1000 <- FALSE}
+  if (ms.em@data.type %in% c("count","abundance","ordinal")) {on_0_1000 <- FALSE}
   
   ## 11.Check overwrite
   overwrite <- ifelse(is.null(args$overwrite), ifelse(do.stack, TRUE, FALSE), args$overwrite)
