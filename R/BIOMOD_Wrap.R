@@ -98,7 +98,8 @@
 ##' 
 ##' @return
 ##' 
-##' A \code{\link{MS.models.out}} object acting as a proxi for the created \code{BIOMOD.models.out}.
+##' A \code{\link{BIOMOD.wrap.out}} object containing a \code{BIOMOD.formated.data}, \code{BIOMOD.models.out},
+##'  and a \code{BIOMOD.ensemble.models.out}.
 ##' 
 ##' @examples
 ##' library(terra)
@@ -289,131 +290,18 @@ BIOMOD_Wrap <- function(dir.name = ".",
                                                                 do.progress = FALSE)
   # )
   
-  ## laisser les messages ?!?! Rajouter quelques messages ? 
-  # save sur un fichier texte et donner le lien
+  ## Possibility to create a new slot with a link for a text file with the ouput 
+  ## And supress the output in this case.
   
   cat("\n\t > Creating wrap object") #?
   wrap <- new("BIOMOD.wrap.out",
               formated.data = formated.data,
               single.models = single.models,
-              ensemble.models = em.models,
-              output = "link")
-  .bm_cat("Done") #to remove ? 
+              ensemble.models = em.models)
+  .bm_cat("Done")
   
   return(wrap)
 } 
-
-# #======================================================================================================
-# 
-# ## BIOMOD_Wrap for ms 
-# 
-# setMethod("BIOMOD_Wrap", signature(ms.project.name = "character"), function(ms.project.name,
-#                                                                             dir.name = ".",
-#                                                                             modeling.id = as.character(format(Sys.time(), "%s")),
-#                                                                             data.type = "binary",
-#                                                                             resp.name,
-#                                                                             resp.var,
-#                                                                             resp.xy = NULL,
-#                                                                             expl.var,
-#                                                                             eval.resp.var = NULL,
-#                                                                             eval.resp.xy = NULL,
-#                                                                             eval.expl.var = NULL,
-#                                                                             filter.raster = FALSE,
-#                                                                             params.PA,
-#                                                                             models, 
-#                                                                             models.pa = NULL,
-#                                                                             metric.eval = c("KAPPA", "TSS", "ROC"),
-#                                                                             weights = NULL,
-#                                                                             prevalence = NULL,
-#                                                                             scale.models = FALSE,
-#                                                                             var.import = 0,
-#                                                                             params.CV,
-#                                                                             params.OPT,
-#                                                                             em.algo,
-#                                                                             params.EM,
-#                                                                             seed.val = NULL,
-#                                                                             nb.cpu = 1){
-#   
-#   ## 0. Check arguments ---------------------------------------------------------------------------
-#   args <- .BIOMOD_Wrap.check.args(dir.name = dir.name,
-#                                   modeling.id = modeling.id,
-#                                   data.type = data.type,
-#                                   resp.name = resp.name,
-#                                   resp.var = resp.var,
-#                                   resp.xy = resp.xy,
-#                                   expl.var = expl.var,
-#                                   eval.resp.var = eval.resp.var,
-#                                   eval.resp.xy = eval.resp.xy,
-#                                   eval.expl.var = eval.expl.var,
-#                                   filter.raster = filter.raster,
-#                                   params.PA = params.PA,
-#                                   models = models,
-#                                   models.pa = models.pa,
-#                                   metric.eval = metric.eval,
-#                                   weights = weights,
-#                                   prevalence = prevalence,
-#                                   var.import = var.import,
-#                                   params.CV = params.CV,
-#                                   params.OPT = params.OPT,
-#                                   em.algo = em.algo,
-#                                   params.EM = params.EM,
-#                                   seed.val = seed.val,
-#                                   nb.cpu = nb.cpu
-#   )
-#   for (argi in names(args)) { assign(x = argi, value = args[[argi]]) }
-#   rm(args)
-#   
-#   formated.data <- MS_FormatingData(ms.project.name = ms.project.name,
-#                                      dir.name = dir.name,
-#                                      resp.name = resp.name,
-#                                      resp.var = resp.var,
-#                                      expl.var = expl.var,
-#                                      data.type = data.type,
-#                                      resp.xy = resp.xy,
-#                                      eval.resp.var = eval.resp.var,
-#                                      eval.expl.var = eval.expl.var,
-#                                      eval.resp.xy = eval.resp.xy,
-#                                      params = params.PA, 
-#                                      #single.formated.data = NULL,
-#                                      #ms.formated.data = NULL,
-#                                      filter.raster = filter.raster,
-#                                      seed.val = NULL)
-# 
-#   
-#   single.models <- MS_Modeling(formated.data,
-#                                modeling.id = modeling.id,
-#                                models = models,
-#                                params.CV = params.CV,
-#                                params.OPT = params.OPT,
-#                                weights = weights,
-#                                prevalence = prevalence,
-#                                metric.eval = metric.eval,
-#                                var.import = var.import,
-#                                scale.models = FALSE,
-#                                nb.cpu = nb.cpu,
-#                                seed.val = NULL)
-#   
-#   ### petit gros problème 
-#   params.EM <- .inversion_species_params(params.EM)
-#   em.models <- MS_EnsembleModeling(single.models,
-#                                    models.chosen = params.EM$models.chosen,
-#                                    em.by = params.EM$em.by,
-#                                    em.algo = em.algo,
-#                                    metric.select = params.EM$metric.select,
-#                                    metric.select.thresh = params.EM$metric.select.thresh,
-#                                    metric.select.table = params.EM$metric.select.table,
-#                                    metric.select.dataset = params.EM$metric.select.dataset,
-#                                    metric.eval = metric.eval,
-#                                    var.import = var.import,
-#                                    EMci.alpha = params.EM$EMci.alpha,
-#                                    EMwmean.decay = params.EM$EMwmean.decay,
-#                                    nb.cpu = nb.cpu,
-#                                    seed.val = NULL)
-#   
-#   return(list("formated.data" = formated.data,
-#               "single.models" = single.models,
-#               "ensemble.models" = em.models))
-# })
 
 
 # ---------------------------------------------------------------------------- #
@@ -450,16 +338,11 @@ BIOMOD_Wrap <- function(dir.name = ".",
   if (!is.character(modeling.id) || length(modeling.id) > 1) { stop("modeling.id must be a 'character' of length 1") }
   
   ## 2. Check params.PA
-  if (length(resp.name) == 1){
-    params.PA <- check.params.PA(params.PA)
-  } else {
-    if (missing(params.PA)){
-      params.PA <- list()
-    }
-    for (sp in resp.name){
-      params.PA[[sp]] <- check.params.PA(params.PA[[sp]])
-    }
+  if (missing(params.PA)){
+    params.PA <- list()
   }
+  params.PA <- check.params.PA(params.PA)
+  
   
   ## 3. Check modeling parameters
   
@@ -525,40 +408,24 @@ BIOMOD_Wrap <- function(dir.name = ".",
   
   
   ## 4. Check params.CV
-  if (length(resp.name) == 1){
-    params.CV <- check.params.CV(params.CV)
-  } else {
-    if (missing(params.CV)){
-      params.CV <- list()
-    }
-    for (sp in resp.name){
-      params.CV[[sp]] <- check.params.CV(params.CV[[sp]])
-    }
+  if (missing(params.CV)){
+    params.CV <- list()
   }
+  params.CV <- check.params.CV(params.CV)
+  
   
   ## 5. Check params.OPT
-  if (length(resp.name) == 1){
-    params.OPT <- check.params.OPT(params.OPT)
-  } else {
-    if (missing(params.OPT)){
-      params.OPT <- list()
-    }
-    for (sp in resp.name){
-      params.OPT[[sp]] <- check.params.OPT(params.OPT[[sp]])
-    }
+  if (missing(params.OPT)){
+    params.OPT <- list()
   }
+  params.OPT <- check.params.OPT(params.OPT)
+  
   
   ## 6. Check params.EM
-  if (length(resp.name) == 1){
-    params.EM <- check.params.EM(params.EM)
-  } else {
-    if (missing(params.EM)){
-      params.EM <- list()
-    }
-    for (sp in resp.name){
-      params.EM[[sp]] <- check.params.EM(params.EM[[sp]])
-    }
-  }
+  if (missing(params.EM)){
+    params.EM <- list()
+  } 
+  params.EM <- check.params.EM(params.EM)
   
   
   ## 7. Check general parameters
@@ -720,20 +587,4 @@ check.params.EM <- function(params.EM){
 }
 
 
-.inversion_species_params <- function(liste){
-  names_liste <- names(liste)
-  names_arguments <- names(unlist(liste))
-  for (n in names_liste){
-    names_arguments <- sub(paste0(n,"."), "",names_arguments)
-  }
-  names_arguments <- unique(names_arguments)
-  new <- list()
-  for (a in names_arguments){
-    list_a <- list()
-    for (l in names_liste){
-      list_a[[l]] <- liste[[l]][[a]]
-    }
-    new[[a]] <- list_a
-  }
-  return(new)
-}
+

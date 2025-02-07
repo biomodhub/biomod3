@@ -15,7 +15,6 @@
 ##' @slot formated.data a \code{BIOMOD.formated.data} object
 ##' @slot single.models a \code{BIOMOD.models.out} object
 ##' @slot ensemble.models a \code{BIOMOD.ensemble.models.out} object
-##' @slot output a \code{character} link to the output file
 ##' 
 ##' @param object a \code{\link{BIOMOD.wrap.out}} object
 ##' 
@@ -29,8 +28,7 @@
 setClass("BIOMOD.wrap.out",
          representation(formated.data = "BIOMOD.formated.data",
                         single.models = "BIOMOD.models.out",
-                        ensemble.models = "BIOMOD.ensemble.models.out",
-                        output = "character"),
+                        ensemble.models = "BIOMOD.ensemble.models.out"),
          validity = function(object){ return(TRUE) })
 
 

@@ -314,6 +314,35 @@ bm_SpeciesParameters <- function(resp.name,
 
   .fun_testIfIn(TRUE, "em.by", em.by, em.by.avail)
   
+  metric.select <- unique(metric.select)
+  avail.eval.meth.list <- c('TSS', 'KAPPA', 'ACCURACY', 'BIAS', 'POD', 'FAR', 'POFD'
+                            , 'SR', 'CSI', 'ETS', 'HK', 'HSS', 'OR', 'ORSS', 'ROC'
+                            , 'BOYCE', 'MPA',
+                            "Accuracy", "Recall", "Precision", "F1",
+                            'RMSE','MSE',"MAE","Rsquared","Rsquared_aj","Max_error")
+
+  .fun_testIfIn(TRUE, "metric.select", metric.select, avail.eval.meth.list)
+  
+  if (!is.null(metric.select.dataset)) {
+    metric.select.dataset.available <- c("calibration", "validation", "evaluation")
+    .fun_testIfIn(TRUE, "metric.select.dataset", metric.select.dataset, metric.select.dataset.available)
+  }
+  
+  .fun_testIfPosNum(TRUE, "EMci.alpha", EMci.alpha)
+  if (EMci.alpha <= 0 | EMci.alpha >= 0.5) {
+    stop("EMci.alpha must be a numeric between 0 and 0.5")
+  }
+  
+  if ((!is.numeric(EMwmean.decay) &&
+       !is.character(EMwmean.decay) &&
+       !is.function(EMwmean.decay)) ||
+      (is.numeric(EMwmean.decay) && EMwmean.decay < 0) ||
+      (is.character(EMwmean.decay) && EMwmean.decay != 'proportional')) {
+    stop("'EMwmean.decay' should be either 'proportional', a numeric value > 0 or a function")
+  }
+  
+  
+  
   params.EM <- list("models.chosen" = models.chosen, "em.by" = em.by, 
                     "metric.select" = metric.select, "metric.select.thresh" = metric.select.thresh,
                     "metric.select.table" = metric.select.table, "metric.select.dataset" = metric.select.dataset, 

@@ -10,7 +10,7 @@
 ##' 
 ##' 
 ##' @param bm.wrap a \code{\link{BIOMOD.wrap.out}} object returned by the 
-##' \code{\link{BIOMOD_Modeling}} function
+##' \code{\link{BIOMOD_Wrap}} function
 ##' @param proj.name a \code{character} corresponding to the name (ID) of the projection set 
 ##' (\emph{a new folder will be created within the simulation folder with this name})
 ##' @param new.env A \code{matrix}, \code{data.frame} or
@@ -126,7 +126,7 @@
 ##'   unlink('GuloGulo', recursive = TRUE)
 ##' }
 ##' 
-##' @importFrom biomod2 BIOMOD_Projection BIOMOD_EnsembleForecasting 
+##' @importFrom biomod2 BIOMOD_Projection BIOMOD_EnsembleForecasting get_evaluations get_formal_data
 ##' @export
 ##' 
 ##' 
@@ -171,33 +171,43 @@ BIOMOD_ProjectionWrap <- function(bm.wrap,
   
 
   # output <- capture.output(
-    proj_single <- BIOMOD_Projection(bm.wrap@single.models,
-                                                        proj.name = proj.name,
-                                                        new.env = new.env,
-                                                        new.env.xy = new.env.xy,
-                                                        models.chosen = models.chosen.single,
-                                                        metric.binary = metric.binary,
-                                                        metric.filter = metric.filter,
-                                                        compress = compress,
-                                                        build.clamping.mask = build.clamping.mask,
-                                                        nb.cpu = nb.cpu,
-                                                        digits = digits)
+  proj_single <- BIOMOD_Projection(bm.wrap@single.models,
+                                   proj.name = proj.name,
+                                   new.env = new.env,
+                                   new.env.xy = new.env.xy,
+                                   models.chosen = models.chosen.single,
+                                   metric.binary = metric.binary,
+                                   metric.filter = metric.filter,
+                                   compress = compress,
+                                   build.clamping.mask = build.clamping.mask,
+                                   nb.cpu = nb.cpu,
+                                   digits = digits,
+                                   seed.val = seed.val,
+                                   omit.na = omit.na,
+                                   on_0_1000 = on_0_1000,
+                                   do.stack = do.stack,
+                                   keep.in.memory = keep.in.memory,
+                                   output.format = output.format,
+                                   overwrite = overwrite)
   # )
   
   cat("\n\t Projection of ensemble models")
   
   # output <- capture.output(
-    proj_ens <- BIOMOD_EnsembleForecasting(bm.wrap@ensemble.models,
-                                                            proj.name = proj.name,
-                                                            new.env = new.env,
-                                                            new.env.xy = new.env.xy,
-                                                            models.chosen = models.chosen.ens,
-                                                            metric.binary = metric.binary,
-                                                            metric.filter = metric.filter,
-                                                            compress = compress,
-                                                            build.clamping.mask = build.clamping.mask,
-                                                            nb.cpu = nb.cpu,
-                                                            digits = digits)
+  proj_ens <- BIOMOD_EnsembleForecasting(bm.wrap@ensemble.models,
+                                         proj.name = proj.name,
+                                         new.env = new.env,
+                                         new.env.xy = new.env.xy,
+                                         models.chosen = models.chosen.ens,
+                                         metric.binary = metric.binary,
+                                         metric.filter = metric.filter,
+                                         compress = compress,
+                                         nb.cpu = nb.cpu,
+                                         digits = digits,
+                                         on_0_1000 = on_0_1000,
+                                         do.stack = do.stack,
+                                         keep.in.memory = keep.in.memory,
+                                         output.format = output.format)
   # )
   
   
@@ -300,7 +310,7 @@ BIOMOD_ProjectionWrap <- function(bm.wrap,
       metric.binary <- NULL
       metric.filter <- NULL
     } else {
-      models.evaluation <- get_evaluations(bm.wrap@single.models)
+      models.evaluation <- biomod2::get_evaluations(bm.wrap@single.models)
       if (is.null(models.evaluation)) {
         warning("Binary and/or Filtered transformations of projection not ran because of models evaluation information missing")
       } else {
