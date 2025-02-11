@@ -146,23 +146,23 @@ setClass("BIOMOD.stored.ms.models.out",
 ##' @importMethodsFrom biomod2 get_species_data get_eval_data get_options get_calib_lines get_projected_models free get_predictions get_kept_models get_formal_data get_built_models get_evaluations get_variables_importance
 ##' 
 
-setGeneric("get_species_data", function(obj, ...) { standardGeneric("get_species_data") }) ## 012
-setGeneric("get_eval_data", function(obj, ...) { standardGeneric("get_eval_data") }) ## 012
-
-setGeneric("get_options", function(obj, ...) { standardGeneric("get_options") }) ## A
-setGeneric("get_calib_lines", function(obj, ...) { standardGeneric("get_calib_lines") }) ## A
-
-setGeneric("get_projected_models", function(obj, ...) { standardGeneric("get_projected_models") }) ## B
-setGeneric("free", function(obj, ...) { standardGeneric("free") }) ## B
-
-setGeneric("get_predictions", function(obj, ...) { standardGeneric("get_predictions") }) ## ABC
-
-setGeneric("get_kept_models", function(obj, ...) { standardGeneric("get_kept_models") }) ## C
-
-setGeneric("get_formal_data", function(obj, ...) { standardGeneric("get_formal_data") }) ## AC
-setGeneric("get_built_models", function(obj, ...) { standardGeneric("get_built_models") }) ## AC
-setGeneric("get_evaluations", function(obj, ...) { standardGeneric("get_evaluations") }) ## AC
-setGeneric("get_variables_importance", function(obj, ...) { standardGeneric("get_variables_importance") }) ## AC
+# setGeneric("get_species_data", function(obj, ...) { standardGeneric("get_species_data") }) ## 012
+# setGeneric("get_eval_data", function(obj, ...) { standardGeneric("get_eval_data") }) ## 012
+# 
+# setGeneric("get_options", function(obj, ...) { standardGeneric("get_options") }) ## A
+# setGeneric("get_calib_lines", function(obj, ...) { standardGeneric("get_calib_lines") }) ## A
+# 
+# setGeneric("get_projected_models", function(obj, ...) { standardGeneric("get_projected_models") }) ## B
+# setGeneric("free", function(obj, ...) { standardGeneric("free") }) ## B
+# 
+# setGeneric("get_predictions", function(obj, ...) { standardGeneric("get_predictions") }) ## ABC
+# 
+# setGeneric("get_kept_models", function(obj, ...) { standardGeneric("get_kept_models") }) ## C
+# 
+# setGeneric("get_formal_data", function(obj, ...) { standardGeneric("get_formal_data") }) ## AC
+# setGeneric("get_built_models", function(obj, ...) { standardGeneric("get_built_models") }) ## AC
+# setGeneric("get_evaluations", function(obj, ...) { standardGeneric("get_evaluations") }) ## AC
+# setGeneric("get_variables_importance", function(obj, ...) { standardGeneric("get_variables_importance") }) ## AC
 
 
 ## show.MS.models.out ---------------------------------------------------
