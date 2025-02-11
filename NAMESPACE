@@ -90,3 +90,5 @@ importFrom(terra,writeRaster)
 importFrom(utils,capture.output)
 importFrom(utils,packageVersion)
 importMethodsFrom(methods,show)
+importMethodsFrom(biomod2,get_options)
+
