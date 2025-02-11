@@ -22,7 +22,7 @@ BIOMOD_ProjectionWrap(
 }
 \arguments{
 \item{bm.wrap}{a \code{\link{BIOMOD.wrap.out}} object returned by the
-\code{\link{BIOMOD_Modeling}} function}
+\code{\link{BIOMOD_Wrap}} function}
 
 \item{proj.name}{a \code{character} corresponding to the name (ID) of the projection set
 (\emph{a new folder will be created within the simulation folder with this name})}

@@ -24,8 +24,6 @@ Class returned by \code{\link{BIOMOD_Wrap}}, and used by
 \item{\code{single.models}}{a \code{BIOMOD.models.out} object}
 
 \item{\code{ensemble.models}}{a \code{BIOMOD.ensemble.models.out} object}
-
-\item{\code{output}}{a \code{character} link to the output file}
 }}
 
 \author{

@@ -136,7 +136,8 @@ An \code{integer} value corresponding to the number of computing resources to be
 parallelize the single models computation}
 }
 \value{
-A \code{\link{MS.models.out}} object acting as a proxi for the created \code{BIOMOD.models.out}.
+A \code{\link{BIOMOD.wrap.out}} object containing a \code{BIOMOD.formated.data}, \code{BIOMOD.models.out},
+and a \code{BIOMOD.ensemble.models.out}.
 }
 \description{
 This function allows to run a workflow for one or several species using biomod2.

@@ -5,7 +5,8 @@
 \title{Project a range of calibrated species distribution models onto new environment}
 \usage{
 MS_EnsembleForecasting(
-  ms.mod,
+  ms.em,
+  ms.proj = NULL,
   proj.name,
   new.env,
   new.env.xy = NULL,
@@ -21,8 +22,11 @@ MS_EnsembleForecasting(
 )
 }
 \arguments{
-\item{ms.mod}{a \code{\link{BIOMOD.models.out}} object returned by the
+\item{ms.em}{a \code{\link{BIOMOD.models.out}} object returned by the
 \code{\link{BIOMOD_Modeling}} function}
+
+\item{ms.proj}{a \code{\link{MS.projection.out}} object returned by the
+\code{\link{MS_Projection}} function}
 
 \item{proj.name}{a \code{character} corresponding to the name (ID) of the projection set
 (\emph{a new folder will be created within the simulation folder with this name})}
@@ -31,7 +35,7 @@ MS_EnsembleForecasting(
 \code{\link[terra:rast]{SpatRaster}} object containing the new
 explanatory variables (in columns or layers, with names matching the
 variables names given to the \code{\link{BIOMOD_FormatingData}} function to build
-\code{ms.mod}) that will be used to project the species distribution model(s)
+\code{ms.em}) that will be used to project the species distribution model(s)
 \cr \emph{Note that old format from \pkg{raster} are still supported such as
 \code{RasterStack} objects. }}
 
@@ -48,7 +52,7 @@ used to project the species distribution model(s)}
 A \code{vector} containing evaluation metric names to be used to transform prediction values
 into binary values based on models evaluation scores obtained with the
 \code{\link{BIOMOD_Modeling}} function. Must be among \code{all} (same evaluation metrics than
-those of \code{ms.mod}) or \code{POD}, \code{FAR}, \code{POFD}, \code{SR}, \code{ACCURACY},
+those of \code{ms.em}) or \code{POD}, \code{FAR}, \code{POFD}, \code{SR}, \code{ACCURACY},
 \code{BIAS}, \code{ROC}, \code{TSS}, \code{KAPPA}, \code{OR}, \code{ORSS}, \code{CSI},
 \code{ETS}, \code{BOYCE}, \code{MPA}}
 
@@ -56,7 +60,7 @@ those of \code{ms.mod}) or \code{POD}, \code{FAR}, \code{POFD}, \code{SR}, \code
 A \code{vector} containing evaluation metric names to be used to transform prediction values
 into filtered values based on models evaluation scores obtained with the
 \code{\link{BIOMOD_Modeling}} function. Must be among \code{all} (same evaluation metrics than
-those of \code{ms.mod}) or \code{POD}, \code{FAR}, \code{POFD}, \code{SR}, \code{ACCURACY},
+those of \code{ms.em}) or \code{POD}, \code{FAR}, \code{POFD}, \code{SR}, \code{ACCURACY},
 \code{BIAS}, \code{ROC}, \code{TSS}, \code{KAPPA}, \code{OR}, \code{ORSS}, \code{CSI},
 \code{ETS}, \code{BOYCE}, \code{MPA}}
 
