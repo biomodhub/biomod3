@@ -54,8 +54,7 @@
 ##' 
 ##' @param params.PA a \code{list} with the species names associated to the parameters of PA
 ##' 
-##' @param single.formated.data a \code{BIOMOD.formated.data} object to add to the MS.formated.data object
-##' @param ms.formated.data a \code{MS.formated.data} object already created which you want to add some species
+##' @param single.formated.data a \code{list} of \code{BIOMOD.formated.data} objects to add to the MS.formated.data object
 ##' 
 ##' @param filter.raster (\emph{optional, default} \code{FALSE}) \cr 
 ##' If \code{expl.var} is of raster type, a \code{logical} value defining whether \code{resp.var} 
@@ -101,7 +100,6 @@ MS_FormatingData <- function(ms.project.name,
                              eval.resp.xy = NULL,
                              params.PA = NULL, 
                              single.formated.data = NULL,
-                             ms.formated.data = NULL,
                              filter.raster = FALSE,
                              seed.val = NULL)
 { 
@@ -114,33 +112,40 @@ MS_FormatingData <- function(ms.project.name,
   
   ## 2. Create folder
   dir.create(file.path(dir.name, ms.project.name), showWarnings = FALSE, recursive = TRUE)
-  dir.create(file.path(dir.name, ms.project.name, ".BIOMOD_DATA", "single.formated.data"), showWarnings = FALSE, recursive = TRUE) #cà va être encore super long
+  dir.create(file.path(dir.name, ms.project.name, ".BIOMOD_DATA", "single.formated.data"), showWarnings = FALSE, recursive = TRUE) #ça va être encore super long
+  dir.create(file.path(dir.name, ms.project.name, ".BIOMOD_DATA", "output"), showWarnings = FALSE, recursive = TRUE)
+  file.txt <- file.path(dir.name, ms.project.name, ".BIOMOD_DATA", "output", "MS_FormatingData.output.txt")
   nameFolder <- file.path(dir.name, ms.project.name, ".BIOMOD_DATA", "single.formated.data")
+  
+  cat("Creation of ms.formated.data \n\n", file = file.txt, append = FALSE)
   
   ## 3.Create MS.formated.data with the data frame
   new.formated.data <- foreach(sp = resp.name) %do% { ## No parallelisation as it is really quick but can be add if necessary ? 
 
     parameters <- params.PA[[sp]]
     
-    output <- capture.output(formated.data <- BIOMOD_FormatingData(dir.name = file.path(dir.name, ms.project.name),
-                                                                   resp.var = resp.var[,sp],
-                                                                   expl.var = expl.var,
-                                                                   resp.xy = resp.xy,
-                                                                   resp.name = sp,
-                                                                   eval.resp.var = eval.resp.var[,sp],
-                                                                   eval.expl.var = eval.expl.var,
-                                                                   eval.resp.xy = eval.resp.xy,
-                                                                   PA.nb.rep = parameters$PA.nb.rep,
-                                                                   PA.nb.absences = parameters$PA.nb.absences,
-                                                                   PA.strategy = parameters$PA.strategy,
-                                                                   PA.dist.min = parameters$PA.dist.min,
-                                                                   PA.dist.max = parameters$PA.dist.max,
-                                                                   PA.sre.quant = parameters$PA.sre.quant,
-                                                                   PA.fact.aggr = parameters$PA.fact.aggr,
-                                                                   PA.user.table = parameters$PA.user.table,
-                                                                   na.rm = T,
-                                                                   filter.raster = filter.raster))
+    capture.output(formated.data <- BIOMOD_FormatingData(dir.name = file.path(dir.name, ms.project.name),
+                                                         resp.var = resp.var[,sp],
+                                                         expl.var = expl.var,
+                                                         resp.xy = resp.xy,
+                                                         resp.name = sp,
+                                                         eval.resp.var = eval.resp.var[,sp],
+                                                         eval.expl.var = eval.expl.var,
+                                                         eval.resp.xy = eval.resp.xy,
+                                                         PA.nb.rep = parameters$PA.nb.rep,
+                                                         PA.nb.absences = parameters$PA.nb.absences,
+                                                         PA.strategy = parameters$PA.strategy,
+                                                         PA.dist.min = parameters$PA.dist.min,
+                                                         PA.dist.max = parameters$PA.dist.max,
+                                                         PA.sre.quant = parameters$PA.sre.quant,
+                                                         PA.fact.aggr = parameters$PA.fact.aggr,
+                                                         PA.user.table = parameters$PA.user.table,
+                                                         na.rm = T,
+                                                         filter.raster = filter.raster),
+                   file = file.txt, append = TRUE)
     save(formated.data, file = file.path(nameFolder, paste0(sp,".sfd")), compress = TRUE)
+    #cat(output, fill = TRUE, file = file.txt, append = TRUE)
+    cat("\n\n", file = file.txt, append = TRUE)
     return(formated.data)
   }
   
@@ -158,11 +163,16 @@ MS_FormatingData <- function(ms.project.name,
     save(sfd, file = file.path(nameFolder, paste0(sfd@sp.name,".sfd")), compress = TRUE)
     
     PA.strategy <- ifelse(.hasSlot(sfd, "PA.strategy"), sfd@PA.strategy, "real")
+    PA.table <- list()
     if (PA.strategy != "real"){
-      PA.table <- sfd@PA.table
-    } else {
-      PA.table <- NULL
+      PA.table[[sfd@sp.name]] <- sfd@PA.table
+    } 
+    
+    eval.sp <- list()
+    if(sfd@has.data.eval){
+      eval.sp[[sfd@sp.name]] <- sfd@eval.data.species
     }
+    
     MSFD <- new(
       'MS.formated.data',
       data.type = sfd@data.type,
@@ -174,10 +184,10 @@ MS_FormatingData <- function(ms.project.name,
       data.env.var = sfd@data.env.var,
       data.mask = sfd@data.mask,
       PA.strategy = PA.strategy,
-      PA.table = list(PA.table),
+      PA.table = PA.table,
       has.data.eval = sfd@has.data.eval,
       eval.coord = sfd@eval.coord,
-      eval.data.species = list(sfd@eval.data.species),
+      eval.data.species = eval.sp,
       eval.data.env.var = sfd@eval.data.env.var,
       has.filter.raster = filter.raster,
       biomod3.version = as.character(packageVersion("biomod2")) #change to biomod3 after

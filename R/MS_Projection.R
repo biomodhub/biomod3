@@ -5,12 +5,11 @@
 ##' @title Project a range of calibrated species distribution models onto new environment
 ##' 
 ##' @description This function allows to project a range of models built with the 
-##' \code{\link{BIOMOD_Modeling}} function onto new environmental data (\emph{which can 
-##' represent new areas, resolution or time scales for example}).
+##' \code{\link{MS_Modeling}} function onto new environmental data.
 ##' 
 ##' 
-##' @param ms.mod a \code{\link{BIOMOD.models.out}} object returned by the 
-##' \code{\link{BIOMOD_Modeling}} function
+##' @param ms.mod a \code{\link{MS.models.out}} object returned by the 
+##' \code{\link{MS_Modeling}} function
 ##' @param proj.name a \code{character} corresponding to the name (ID) of the projection set 
 ##' (\emph{a new folder will be created within the simulation folder with this name})
 ##' @param new.env A \code{matrix}, \code{data.frame} or
@@ -65,7 +64,7 @@
 ##' 
 ##' @return
 ##' 
-##' A \code{\link{BIOMOD.projection.out}} object containing models projections, or links to saved 
+##' A \code{\link{MS.projection.out}} object containing models projections, or links to saved 
 ##' outputs. \cr Models projections are stored out of \R (for memory storage reasons) in 
 ##' \code{proj.name} folder created in the current working directory :
 ##' \enumerate{
@@ -132,17 +131,17 @@
 ###################################################################################################
 
 MS_Projection <- function(ms.mod,
-                              proj.name,
-                              new.env,
-                              new.env.xy = NULL,
-                              models.chosen = 'all',
-                              metric.binary = NULL,
-                              metric.filter = NULL,
-                              compress = TRUE,
-                              digits = 0,
-                              build.clamping.mask = TRUE,
-                              nb.cpu = 1,
-                              seed.val = NULL,
+                          proj.name,
+                          new.env,
+                          new.env.xy = NULL,
+                          models.chosen = 'all',
+                          metric.binary = NULL,
+                          metric.filter = NULL,
+                          compress = TRUE,
+                          digits = 0,
+                          build.clamping.mask = TRUE,
+                          nb.cpu = 1,
+                          seed.val = NULL,
                               ...) {
   .bm_cat("Do Single Models Projection")
   
@@ -177,6 +176,8 @@ MS_Projection <- function(ms.mod,
                   modeling.id = ms.mod@modeling.id,
                   type = "mod")
   
+  file.txt <- file.path(ms.mod@dir.name, ".BIOMOD_DATA", "output", "MS_Projection.output.txt")
+  cat("Creation of MS.projection.out \n\n", file = file.txt, append = FALSE)
   
   cat("\n")
   workflow <- foreach(sp = ms.mod@sp.name) %dopar% {
@@ -186,17 +187,19 @@ MS_Projection <- function(ms.mod,
     
     models.chosen.sp <- models.chosen[[sp]]
     # 2. Run MS_EnsembleModeling
-    output <- capture.output(proj_sp <- BIOMOD_Projection(bm.mod,
-                                                          proj.name = proj.name,
-                                                          new.env = new.env,
-                                                          new.env.xy = new.env.xy,
-                                                          models.chosen = models.chosen.sp,
-                                                          metric.binary = metric.binary,
-                                                          metric.filter = metric.filter,
-                                                          compress = TRUE,
-                                                          build.clamping.mask = TRUE,
-                                                          nb.cpu = 1,
-                                                          seed.val = NULL))
+    capture.output(proj_sp <- BIOMOD_Projection(bm.mod,
+                                                proj.name = proj.name,
+                                                new.env = new.env,
+                                                new.env.xy = new.env.xy,
+                                                models.chosen = models.chosen.sp,
+                                                metric.binary = metric.binary,
+                                                metric.filter = metric.filter,
+                                                compress = TRUE,
+                                                build.clamping.mask = TRUE,
+                                                nb.cpu = 1,
+                                                seed.val = NULL),
+                   file = file.txt, append = TRUE)
+    cat("\n\n", file = file.txt, append = TRUE)
     models.chosen[[sp]] <- proj_sp@models.projected
     
   }

@@ -209,7 +209,6 @@ rast.has.values <- function(x)
 ##' 
 ##' @return a wide \code{data.frame}
 ##' @importFrom stats reshape
-##' @export
 ##' @keywords internal
 
 .transform_model.as.col <- function(df)

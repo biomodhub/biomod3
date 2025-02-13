@@ -17,7 +17,6 @@ MS_FormatingData(
   eval.resp.xy = NULL,
   params.PA = NULL,
   single.formated.data = NULL,
-  ms.formated.data = NULL,
   filter.raster = FALSE,
   seed.val = NULL
 )
@@ -73,9 +72,7 @@ the species distribution model(s) with independent data}
 
 \item{params.PA}{a \code{list} with the species names associated to the parameters of PA}
 
-\item{single.formated.data}{a \code{BIOMOD.formated.data} object to add to the MS.formated.data object}
-
-\item{ms.formated.data}{a \code{MS.formated.data} object already created which you want to add some species}
+\item{single.formated.data}{a \code{list} of \code{BIOMOD.formated.data} objects to add to the MS.formated.data object}
 
 \item{filter.raster}{(\emph{optional, default} \code{FALSE}) \cr
 If \code{expl.var} is of raster type, a \code{logical} value defining whether \code{resp.var}

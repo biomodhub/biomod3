@@ -5,12 +5,10 @@
 ##' @title Run a range of species distribution models
 ##' 
 ##' @description This function allows to calibrate and evaluate a range of modeling techniques 
-##' for a given species distribution. The dataset can be split up in calibration/validation parts,
-##' and the predictive power of the different models can be estimated using a range of evaluation 
-##' metrics (see Details).
+##' for some given species distribution. It run the function BIOMOD_Modeling for all the different species..
 ##' 
 ##' 
-##' @param ms.format a \code{\link{MS.formated.data}} object returned by the \code{\link{BIOMOD_FormatingData}} function
+##' @param ms.format a \code{\link{MS.formated.data}} object returned by the \code{\link{MS_FormatingData}} function
 ##' @param modeling.id a \code{character} corresponding to the name (ID) of the simulation set 
 ##' (\emph{a random number by default})
 ##' @param models a \code{vector} containing model names to be computed, must be among 
@@ -47,7 +45,7 @@
 ##' 
 ##' @return
 ##' 
-##' A \code{\link{MS.models.out}} object acting as a proxi for the created \code{BIOMOD.models.out}.
+##' A \code{\link{MS.models.out}} object acting as a proxi for the created \code{BIOMOD.models.out} objects.
 ##' 
 ##' @importFrom foreach foreach %do% %dopar%
 ##' @importFrom biomod2 BIOMOD_Modeling
@@ -89,16 +87,17 @@ MS_Modeling <- function(ms.format,
   for (argi in names(args)) { assign(x = argi, value = args[[argi]]) }
   rm(args)
   
-  if (nb.cpu > 1) {
-    if (.getOS() != "windows") {
-      if (!isNamespaceLoaded("doParallel")) {
-        if(!requireNamespace('doParallel', quietly = TRUE)) stop("Package 'doParallel' not found")
-      }
-      doParallel::registerDoParallel(cores = nb.cpu)
-    } else {
-      warning("Parallelisation with `foreach` is not available for Windows. Sorry.")
-    }
-  }
+  # if (nb.cpu > 1) {
+  #   if (.getOS() != "windows") {
+  #     if (!isNamespaceLoaded("doParallel")) {
+  #       if(!requireNamespace('doParallel', quietly = TRUE)) stop("Package 'doParallel' not found")
+  #     }
+  #     doParallel::registerDoParallel(cores = nb.cpu)
+  #   } else {
+  #     warning("Parallelisation with `foreach` is not available for Windows. Sorry.")
+  #   }
+  # }
+  
   
   MSmodels<- new(
     'MS.models.out',
@@ -114,10 +113,11 @@ MS_Modeling <- function(ms.format,
   )
   
   nameFolder <- file.path(ms.format@dir.name, ms.format@ms.project, ".BIOMOD_DATA", "single.formated.data")
-  
   dir.name <- file.path(ms.format@dir.name, ms.format@ms.project)
+  file.txt <- file.path(dir.name, ".BIOMOD_DATA", "output", "MS_Modeling.output.txt")
+  cat("Creation of MS.models.out \n\n", file = file.txt, append = FALSE)
   
-  workflow <- foreach(sp = ms.format@sp.name) %dopar% {
+  workflow <- foreach(sp = ms.format@sp.name) %do% {
     cat("\n\t Modeling of", sp)
     # 1. Récupération ms.format 
     sfd <- get(load(file.path(nameFolder, paste0(sp,".sfd"))))
@@ -126,33 +126,36 @@ MS_Modeling <- function(ms.format,
     parameter.OPT <- params.OPT[[sp]]
     
     # 2. Run MS_Modeling
-    output <- capture.output(sfd_models <- BIOMOD_Modeling(sfd,
-                                                       modeling.id = modeling.id,
-                                                       models = models,
-                                                       CV.strategy = parameter.CV$CV.strategy,
-                                                       CV.nb.rep = parameter.CV$CV.nb.rep,
-                                                       CV.perc = parameter.CV$CV.perc,
-                                                       CV.k = parameter.CV$CV.k,
-                                                       CV.balance = parameter.CV$CV.balance,
-                                                       CV.env.var = parameter.CV$CV.env.var,
-                                                       CV.strat = parameter.CV$CV.strat,
-                                                       CV.user.table = parameter.CV$CV.user.table,
-                                                       CV.do.full.models = TRUE,
-                                                       OPT.strategy = parameter.OPT$OPT.strategy,
-                                                       OPT.user.val = parameter.OPT$OPT.user.val,
-                                                       OPT.user.base = parameter.OPT$OPT.user.base,
-                                                       OPT.user = parameter.OPT$OPT.user,
-                                                       weights = weights,
-                                                       prevalence = prevalence,
-                                                       metric.eval = metric.eval,
-                                                       var.import = var.import,
-                                                       scale.models = scale.models,
-                                                       nb.cpu = 1,
-                                                       seed.val = NULL))
+    capture.output(sfd_models <- BIOMOD_Modeling(sfd,
+                                                 modeling.id = modeling.id,
+                                                 models = models,
+                                                 CV.strategy = parameter.CV$CV.strategy,
+                                                 CV.nb.rep = parameter.CV$CV.nb.rep,
+                                                 CV.perc = parameter.CV$CV.perc,
+                                                 CV.k = parameter.CV$CV.k,
+                                                 CV.balance = parameter.CV$CV.balance,
+                                                 CV.env.var = parameter.CV$CV.env.var,
+                                                 CV.strat = parameter.CV$CV.strat,
+                                                 CV.user.table = parameter.CV$CV.user.table,
+                                                 CV.do.full.models = TRUE,
+                                                 OPT.strategy = parameter.OPT$OPT.strategy,
+                                                 OPT.user.val = parameter.OPT$OPT.user.val,
+                                                 OPT.user.base = parameter.OPT$OPT.user.base,
+                                                 OPT.user = parameter.OPT$OPT.user,
+                                                 weights = weights,
+                                                 prevalence = prevalence,
+                                                 metric.eval = metric.eval,
+                                                 var.import = var.import,
+                                                 scale.models = scale.models,
+                                                 nb.cpu = nb.cpu,
+                                                 seed.val = NULL),
+                   file = file.txt, append = TRUE)
+    
+    cat("\n\n", file = file.txt, append = TRUE)
     
     # 3.Stockage
-    MSmodels@models.computed[[sp]] = sfd_models@models.computed
-    MSmodels@models.failed[[sp]] = sfd_models@models.failed
+    MSmodels@models.computed[[sp]] <- sfd_models@models.computed
+    MSmodels@models.failed[[sp]] <- sfd_models@models.failed
   }
   
   ## SAVE MODEL OBJECT ON HARD DRIVE ----------------------------

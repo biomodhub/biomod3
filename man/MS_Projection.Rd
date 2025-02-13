@@ -21,8 +21,8 @@ MS_Projection(
 )
 }
 \arguments{
-\item{ms.mod}{a \code{\link{BIOMOD.models.out}} object returned by the
-\code{\link{BIOMOD_Modeling}} function}
+\item{ms.mod}{a \code{\link{MS.models.out}} object returned by the
+\code{\link{MS_Modeling}} function}
 
 \item{proj.name}{a \code{character} corresponding to the name (ID) of the projection set
 (\emph{a new folder will be created within the simulation folder with this name})}
@@ -82,7 +82,7 @@ An \code{integer} value corresponding to the new seed value to be set}
 \item{\ldots}{(\emph{optional, see Details)})}
 }
 \value{
-A \code{\link{BIOMOD.projection.out}} object containing models projections, or links to saved
+A \code{\link{MS.projection.out}} object containing models projections, or links to saved
 outputs. \cr Models projections are stored out of \R (for memory storage reasons) in
 \code{proj.name} folder created in the current working directory :
 \enumerate{
@@ -97,8 +97,7 @@ the \code{proj.name} folder
 }
 \description{
 This function allows to project a range of models built with the
-\code{\link{BIOMOD_Modeling}} function onto new environmental data (\emph{which can
-represent new areas, resolution or time scales for example}).
+\code{\link{MS_Modeling}} function onto new environmental data.
 }
 \details{
 If \code{models.chosen = 'all'}, projections are done for all calibration and pseudo absences

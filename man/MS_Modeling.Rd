@@ -21,7 +21,7 @@ MS_Modeling(
 )
 }
 \arguments{
-\item{ms.format}{a \code{\link{MS.formated.data}} object returned by the \code{\link{BIOMOD_FormatingData}} function}
+\item{ms.format}{a \code{\link{MS.formated.data}} object returned by the \code{\link{MS_FormatingData}} function}
 
 \item{modeling.id}{a \code{character} corresponding to the name (ID) of the simulation set
 (\emph{a random number by default})}
@@ -64,13 +64,11 @@ parallelize the single models computation}
 An \code{integer} value corresponding to the new seed value to be set}
 }
 \value{
-A \code{\link{MS.models.out}} object acting as a proxi for the created \code{BIOMOD.models.out}.
+A \code{\link{MS.models.out}} object acting as a proxi for the created \code{BIOMOD.models.out} objects.
 }
 \description{
 This function allows to calibrate and evaluate a range of modeling techniques
-for a given species distribution. The dataset can be split up in calibration/validation parts,
-and the predictive power of the different models can be estimated using a range of evaluation
-metrics (see Details).
+for some given species distribution. It run the function BIOMOD_Modeling for all the different species..
 }
 \author{
 Helene Blancheteau
