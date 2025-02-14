@@ -1,19 +1,19 @@
 
-# .getOS <- function()
-# {
-#   sysinf = Sys.info()
-#   if (!is.null(sysinf))
-#   {
-#     os = sysinf['sysname']
-#     if (os == 'Darwin') os = "mac"
-#   } else
-#   {
-#     os = .Platform$OS.type
-#     if (grepl("^darwin", R.version$os)) os = "mac"
-#     if (grepl("linux-gnu", R.version$os)) os = "linux"
-#   }
-#   return(tolower(os))
-# }
+.getOS <- function()
+{
+  sysinf = Sys.info()
+  if (!is.null(sysinf))
+  {
+    os = sysinf['sysname']
+    if (os == 'Darwin') os = "mac"
+  } else
+  {
+    os = .Platform$OS.type
+    if (grepl("^darwin", R.version$os)) os = "mac"
+    if (grepl("linux-gnu", R.version$os)) os = "linux"
+  }
+  return(tolower(os))
+}
 
 
 ## BIOMOD SPECIFIC CAT ----------------------------------------------------------------------------

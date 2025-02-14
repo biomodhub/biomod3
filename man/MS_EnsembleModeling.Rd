@@ -96,6 +96,68 @@ uncertainty can be assessed as well as variables importance, ensemble prediction
 evaluated against original data, and created ensemble models can be projected over new
 conditions (see Details).
 }
+\examples{
+library(terra)
+library(biomod2)
+
+# Load species occurrences (6 species available)
+data(DataSpecies)
+
+# Select the name of the studied species
+myRespName <- c("PantheraOnca", "PteropusGiganteus")
+
+# Get corresponding presence/absence data
+myResp <- DataSpecies[, myRespName]
+
+# Get corresponding XY coordinates
+myRespXY <- DataSpecies[, c('X_WGS84', 'Y_WGS84')]
+
+# Load environmental variables extracted from BIOCLIM (bio_3, bio_4, bio_7, bio_11 & bio_12)
+data(bioclim_current)
+myExpl <- terra::rast(bioclim_current)
+
+
+
+myMSData <- MS_FormatingData(ms.project.name = "Example_MS",
+                             resp.name = myRespName,
+                             resp.var = myResp,
+                             expl.var = myExpl,
+                             data.type = "binary",
+                             resp.xy = myRespXY)
+
+params.CV <- list("PantheraOnca" = list(CV.strategy = "random", CV.nb.rep = 2, CV.perc = 0.8),
+                  "PteropusGiganteus" = list(CV.strategy = "random", CV.nb.rep = 2, CV.perc = 0.8))
+
+params.OPT <- list("PantheraOnca" = list(OPT.strategy = "bigboss"),
+                   "PteropusGiganteus" = list(OPT.strategy = "bigboss"))
+
+myMSModelOut <- MS_Modeling(myMSData, 
+                            modeling.id = "FirstModels",
+                            models = c("GLM", "XGBOOST"),
+                            params.CV = params.CV,
+                            params.OPT = params.OPT)
+
+metric.select.tresh.byspecies <- list("PantheraOnca" = 0.5,
+                                      "PteropusGiganteus" = 0.4)
+
+myMSEM <- MS_EnsembleModeling(myMSModelOut,
+                              models.chosen = 'all',
+                              em.by = 'all',
+                              em.algo = c("EMmean", "EMca"),
+                              metric.select = 'TSS',
+                              metric.select.thresh = metric.select.tresh.byspecies,
+                              metric.eval = c('TSS', 'ROC'))
+
+myMSEM
+
+get_evaluations(myMSEM, sp = "PantheraOnca")
+
+
+\dontshow{
+  unlink('Example_MS', recursive = TRUE)
+}
+
+}
 \seealso{
 \code{\link{BIOMOD_FormatingData}}, \code{\link{bm_ModelingOptions}},
 \code{\link{bm_CrossValidation}}, \code{\link{bm_VariablesImportance}},

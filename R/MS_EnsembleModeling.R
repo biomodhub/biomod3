@@ -78,6 +78,67 @@
 ##' \code{\link{bm_PlotVarImpBoxplot}}, \code{\link{bm_PlotResponseCurves}}
 ##' @family Main functions
 ##' 
+##' @examples
+##' library(terra)
+##' library(biomod2)
+##' 
+##' # Load species occurrences (6 species available)
+##' data(DataSpecies)
+##' 
+##' # Select the name of the studied species
+##' myRespName <- c("PantheraOnca", "PteropusGiganteus")
+##' 
+##' # Get corresponding presence/absence data
+##' myResp <- DataSpecies[, myRespName]
+##' 
+##' # Get corresponding XY coordinates
+##' myRespXY <- DataSpecies[, c('X_WGS84', 'Y_WGS84')]
+##' 
+##' # Load environmental variables extracted from BIOCLIM (bio_3, bio_4, bio_7, bio_11 & bio_12)
+##' data(bioclim_current)
+##' myExpl <- terra::rast(bioclim_current)
+##' 
+##' 
+##' 
+##' myMSData <- MS_FormatingData(ms.project.name = "Example_MS",
+##'                              resp.name = myRespName,
+##'                              resp.var = myResp,
+##'                              expl.var = myExpl,
+##'                              data.type = "binary",
+##'                              resp.xy = myRespXY)
+##'
+##' params.CV <- list("PantheraOnca" = list(CV.strategy = "random", CV.nb.rep = 2, CV.perc = 0.8),
+##'                   "PteropusGiganteus" = list(CV.strategy = "random", CV.nb.rep = 2, CV.perc = 0.8))
+##' 
+##' params.OPT <- list("PantheraOnca" = list(OPT.strategy = "bigboss"),
+##'                    "PteropusGiganteus" = list(OPT.strategy = "bigboss"))
+##' 
+##' myMSModelOut <- MS_Modeling(myMSData, 
+##'                             modeling.id = "FirstModels",
+##'                             models = c("GLM", "XGBOOST"),
+##'                             params.CV = params.CV,
+##'                             params.OPT = params.OPT)
+##' 
+##' metric.select.tresh.byspecies <- list("PantheraOnca" = 0.5,
+##'                                       "PteropusGiganteus" = 0.4)
+##' 
+##' myMSEM <- MS_EnsembleModeling(myMSModelOut,
+##'                               models.chosen = 'all',
+##'                               em.by = 'all',
+##'                               em.algo = c("EMmean", "EMca"),
+##'                               metric.select = 'TSS',
+##'                               metric.select.thresh = metric.select.tresh.byspecies,
+##'                               metric.eval = c('TSS', 'ROC'))
+##' 
+##' myMSEM
+##' 
+##' get_evaluations(myMSEM, sp = "PantheraOnca")
+##' 
+##' 
+##' \dontshow{
+##'   unlink('Example_MS', recursive = TRUE)
+##' }
+##' 
 ##' @importFrom foreach foreach %do% %dopar%
 ##' @importFrom biomod2 BIOMOD_EnsembleModeling
 ##' 
@@ -120,16 +181,16 @@ MS_EnsembleModeling <- function(ms.mod,
   for (argi in names(args)) { assign(x = argi, value = args[[argi]]) }
   rm(args)
   
-  if (nb.cpu > 1) {
-    if (.getOS() != "windows") {
-      if (!isNamespaceLoaded("doParallel")) {
-        if(!requireNamespace('doParallel', quietly = TRUE)) stop("Package 'doParallel' not found")
-      }
-      doParallel::registerDoParallel(cores = nb.cpu)
-    } else {
-      warning("Parallelisation with `foreach` is not available for Windows. Sorry.")
-    }
-  }
+  # if (nb.cpu > 1) {
+  #   if (.getOS() != "windows") {
+  #     if (!isNamespaceLoaded("doParallel")) {
+  #       if(!requireNamespace('doParallel', quietly = TRUE)) stop("Package 'doParallel' not found")
+  #     }
+  #     doParallel::registerDoParallel(cores = nb.cpu)
+  #   } else {
+  #     warning("Parallelisation with `foreach` is not available for Windows. Sorry.")
+  #   }
+  # }
   
   MSEM<- new(
     'MS.ensemble.models.out',
@@ -144,8 +205,11 @@ MS_EnsembleModeling <- function(ms.mod,
     em.models_kept = list()
   )
   
+  file.txt <- file.path(ms.mod@dir.name, ".BIOMOD_DATA", "output", "MS_EnsembleModeling.output.txt")
+  cat("Creation of MS.ensemble.models.out \n\n", file = file.txt, append = FALSE)
+  
   cat("\n")
-  workflow <- foreach(sp = ms.mod@sp.name) %dopar% {
+  workflow <- foreach(sp = ms.mod@sp.name) %do% {
     cat("\n\t Ensemble Modeling of", sp)
     # 1. Récupération ms.mod 
     bm.mod <- get(load(file.path(ms.mod@dir.name, sp, paste0(sp, ".", ms.mod@modeling.id,".models.out"))))
@@ -159,21 +223,23 @@ MS_EnsembleModeling <- function(ms.mod,
 
     
     # 2. Run MS_EnsembleModeling
-    output <- capture.output(em_models <- BIOMOD_EnsembleModeling(bm.mod,
-                                                                  models.chosen = models.chosen.sp,
-                                                                  em.by = em.by.sp,
-                                                                  em.algo = em.algo,
-                                                                  metric.select = metric.select.sp,
-                                                                  metric.select.thresh = metric.select.thresh.sp,
-                                                                  metric.select.table = metric.select.table.sp,
-                                                                  metric.select.dataset = metric.select.dataset.sp,
-                                                                  metric.eval = metric.eval,
-                                                                  var.import = var.import,
-                                                                  EMci.alpha = EMci.alpha,
-                                                                  EMwmean.decay = EMwmean.decay,
-                                                                  nb.cpu = 1,
-                                                                  seed.val = NULL,
-                                                                  do.progress = FALSE))
+    capture.output(em_models <- BIOMOD_EnsembleModeling(bm.mod,
+                                                        models.chosen = models.chosen.sp,
+                                                        em.by = em.by.sp,
+                                                        em.algo = em.algo,
+                                                        metric.select = metric.select.sp,
+                                                        metric.select.thresh = metric.select.thresh.sp,
+                                                        metric.select.table = metric.select.table.sp,
+                                                        metric.select.dataset = metric.select.dataset.sp,
+                                                        metric.eval = metric.eval,
+                                                        var.import = var.import,
+                                                        EMci.alpha = EMci.alpha,
+                                                        EMwmean.decay = EMwmean.decay,
+                                                        nb.cpu = nb.cpu,
+                                                        seed.val = NULL,
+                                                        do.progress = FALSE),
+                   file = file.txt, append = TRUE)
+    cat("\n\n", file = file.txt, append = TRUE)
     
     # 3.Stockage
     MSEM@em.computed[[sp]] <- em_models@em.computed
@@ -303,7 +369,6 @@ MS_EnsembleModeling <- function(ms.mod,
   
 
   ## 6. Check metric.select.thresh --------------------------------------------
-  print(metric.select.thresh)
   if (!is.null(initial.metric.select)) {
     if(!is.list(metric.select.thresh)){
       if (!is.null(metric.select.thresh)) {
@@ -313,21 +378,21 @@ MS_EnsembleModeling <- function(ms.mod,
         if (length(initial.metric.select) != length(metric.select.thresh)) {
           stop("you must specify as many metric.select.thresh as metric.select (if you specify some)")
         }
-        cat("\n   > Evaluation & Weighting methods summary :\n")
-        if (any(c("RMSE", "MSE", "MAE", "Max_error") %in% metric.select)){
-          metric.select.over <- metric.select[-which(metric.select %in% c("RMSE", "MSE", "MAE", "Max_error"))]
-          metric.select.thresh.over <- metric.select.thresh[-which(metric.select %in% c("RMSE", "MSE", "MAE", "Max_error"))]
-          cat(paste(metric.select.over, metric.select.thresh.over, sep = " over ", collapse = "\n      ")
-              , fill = TRUE, labels = "     ")
-          
-          metric.select.under <- metric.select[which(metric.select %in% c("RMSE", "MSE", "MAE", "Max_error"))]
-          metric.select.thresh.under <- metric.select.thresh[which(metric.select %in% c("RMSE", "MSE", "MAE", "Max_error"))]
-          cat(paste(metric.select.under, metric.select.thresh.under, sep = " under the best + ", collapse = "\n      ")
-              , fill = TRUE, labels = "     ")
-        } else {
-          cat(paste(metric.select, metric.select.thresh, sep = " over ", collapse = "\n      ")
-              , fill = TRUE, labels = "     ")
-        }
+        # cat("\n   > Evaluation & Weighting methods summary :\n")
+        # if (any(c("RMSE", "MSE", "MAE", "Max_error") %in% metric.select)){
+        #   metric.select.over <- metric.select[-which(metric.select %in% c("RMSE", "MSE", "MAE", "Max_error"))]
+        #   metric.select.thresh.over <- metric.select.thresh[-which(metric.select %in% c("RMSE", "MSE", "MAE", "Max_error"))]
+        #   cat(paste(metric.select.over, metric.select.thresh.over, sep = " over ", collapse = "\n      ")
+        #       , fill = TRUE, labels = "     ")
+        #   
+        #   metric.select.under <- metric.select[which(metric.select %in% c("RMSE", "MSE", "MAE", "Max_error"))]
+        #   metric.select.thresh.under <- metric.select.thresh[which(metric.select %in% c("RMSE", "MSE", "MAE", "Max_error"))]
+        #   cat(paste(metric.select.under, metric.select.thresh.under, sep = " under the best + ", collapse = "\n      ")
+        #       , fill = TRUE, labels = "     ")
+        # } else {
+        #   cat(paste(metric.select, metric.select.thresh, sep = " over ", collapse = "\n      ")
+        #       , fill = TRUE, labels = "     ")
+        # }
       } else {
         cat("\n   ! No metric.select.thresh -> All models will be kept for Ensemble Modeling")
         #metric.select.thresh <- ifelse(metric.select %in% c("RMSE", "MSE", "MAE", "Max_error"), 100, 0)

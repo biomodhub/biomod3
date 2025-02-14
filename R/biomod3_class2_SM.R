@@ -145,6 +145,7 @@ setClass("BIOMOD.stored.ms.models.out",
 ##' @importFrom biomod2 load_stored_object get_options
 ##' @importMethodsFrom biomod2 get_species_data get_eval_data get_options get_calib_lines get_projected_models free get_predictions get_kept_models get_formal_data get_built_models get_evaluations get_variables_importance
 ##' 
+NULL
 
 # setGeneric("get_species_data", function(obj, ...) { standardGeneric("get_species_data") }) ## 012
 # setGeneric("get_eval_data", function(obj, ...) { standardGeneric("get_eval_data") }) ## 012
@@ -178,7 +179,8 @@ setMethod('show', signature('MS.models.out'), function(object) {
   cat("\nSpecies modeled :", object@sp.name, fill = .Options$width)
   cat("\nModeling id :", object@modeling.id, fill = .Options$width)
   cat("\nConsidered variables :", object@expl.var.names, fill = .Options$width)
-  cat("\n\nComputed Models : ", object@models.computed, fill = .Options$width)
+  cat("\n\nComputed Models : ", fill = .Options$width)
+  show(object@models.computed)
   .bm_cat()
 })
 

@@ -76,6 +76,50 @@
 ##' @seealso \code{\link{bm_PseudoAbsences}}, \code{\link{BIOMOD_Modeling}}
 ##' @family Main functions
 ##' 
+##' @examples
+##' library(terra)
+##' library(biomod2)
+##' 
+##' # Load species occurrences (6 species available)
+##' data(DataSpecies)
+##' head(DataSpecies)
+##' 
+##' # Select the name of the studied species
+##' myRespName <- c("PantheraOnca", "PteropusGiganteus")
+##' 
+##' # Get corresponding presence/absence data
+##' myResp <- DataSpecies[, myRespName]
+##' 
+##' # Get corresponding XY coordinates
+##' myRespXY <- DataSpecies[, c('X_WGS84', 'Y_WGS84')]
+##' 
+##' # Load environmental variables extracted from BIOCLIM (bio_3, bio_4, bio_7, bio_11 & bio_12)
+##' data(bioclim_current)
+##' myExpl <- terra::rast(bioclim_current)
+##' 
+##' \dontshow{
+##'   myExtent <- terra::ext(0,30,45,70)
+##'   myExpl <- terra::crop(myExpl, myExtent)
+##' }
+##' 
+##' 
+##' 
+##' myMSData <- MS_FormatingData(ms.project.name = "Example_MS",
+##'                              resp.name = myRespName,
+##'                              resp.var = myResp,
+##'                              expl.var = myExpl,
+##'                              data.type = "binary",
+##'                              resp.xy = myRespXY)
+##' 
+##' myMSData
+##' summary(myMSData)
+##' plot(myMSData)
+##' 
+##' \dontshow{
+##'   unlink('Example_MS', recursive = TRUE)
+##' }
+##' 
+##' 
 ##' 
 ##' 
 ##' @importFrom biomod2 BIOMOD_FormatingData

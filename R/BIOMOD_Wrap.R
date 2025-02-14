@@ -140,6 +140,7 @@
 ##'                       params.CV = list(CV.strategy = 'random',
 ##'                                        CV.nb.rep = 3,
 ##'                                        CV.perc = 0.7),
+##'                       params.OPT = list(OPT.strategy = "bigboss"),
 ##'                       em.algo = c('EMmean', 'EMca'),
 ##'                       params.EM = list(models.chosen = 'all',
 ##'                                        em.by = 'all',

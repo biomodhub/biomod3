@@ -118,6 +118,57 @@
 ##' \code{\link{BIOMOD_RangeSize}}
 ##' @family Main functions
 ##' 
+##' @examples
+##' library(terra)
+##' library(biomod2)
+##' 
+##' # Load species occurrences (6 species available)
+##' data(DataSpecies)
+##' 
+##' # Select the name of the studied species
+##' myRespName <- c("PantheraOnca", "PteropusGiganteus")
+##' 
+##' # Get corresponding presence/absence data
+##' myResp <- DataSpecies[, myRespName]
+##' 
+##' # Get corresponding XY coordinates
+##' myRespXY <- DataSpecies[, c('X_WGS84', 'Y_WGS84')]
+##' 
+##' # Load environmental variables extracted from BIOCLIM (bio_3, bio_4, bio_7, bio_11 & bio_12)
+##' data(bioclim_current)
+##' myExpl <- terra::rast(bioclim_current)
+##' 
+##' 
+##' myMSData <- MS_FormatingData(ms.project.name = "Example_MS",
+##'                              resp.name = myRespName,
+##'                              resp.var = myResp,
+##'                              expl.var = myExpl,
+##'                              data.type = "binary",
+##'                              resp.xy = myRespXY)
+##'
+##' params.CV <- list("PantheraOnca" = list(CV.strategy = "random", CV.nb.rep = 2, CV.perc = 0.8),
+##'                   "PteropusGiganteus" = list(CV.strategy = "random", CV.nb.rep = 2, CV.perc = 0.8))
+##' 
+##' params.OPT <- list("PantheraOnca" = list(OPT.strategy = "bigboss"),
+##'                    "PteropusGiganteus" = list(OPT.strategy = "bigboss"))
+##' 
+##' myMSModelOut <- MS_Modeling(myMSData, 
+##'                             modeling.id = "FirstModels",
+##'                             models = c("GLM", "XGBOOST"),
+##'                             params.CV = params.CV,
+##'                             params.OPT = params.OPT)
+##' 
+##' myMSProj <- MS_Projection(myMSModelOut,
+##' proj.name = "Current",
+##' new.env = myExpl)
+##' 
+##' myMSProj
+##' plot(myMSProj, sp = "PantheraOnca")
+##' 
+##' \dontshow{
+##'   unlink('Example_MS', recursive = TRUE)
+##' }
+##' 
 ##' 
 ##' @importFrom foreach foreach %dopar% 
 ##' @importFrom terra rast subset nlyr writeRaster terraOptions wrap unwrap

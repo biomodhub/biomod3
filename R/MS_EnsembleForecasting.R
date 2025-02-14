@@ -121,6 +121,69 @@
 ##' \code{\link{BIOMOD_RangeSize}}
 ##' @family Main functions
 ##' 
+##' @examples
+##' library(terra)
+##' library(biomod2)
+##' 
+##' # Load species occurrences (6 species available)
+##' data(DataSpecies)
+##' 
+##' # Select the name of the studied species
+##' myRespName <- c("PantheraOnca", "PteropusGiganteus")
+##' 
+##' # Get corresponding presence/absence data
+##' myResp <- DataSpecies[, myRespName]
+##' 
+##' # Get corresponding XY coordinates
+##' myRespXY <- DataSpecies[, c('X_WGS84', 'Y_WGS84')]
+##' 
+##' # Load environmental variables extracted from BIOCLIM (bio_3, bio_4, bio_7, bio_11 & bio_12)
+##' data(bioclim_current)
+##' myExpl <- terra::rast(bioclim_current)
+##' 
+##' 
+##' myMSData <- MS_FormatingData(ms.project.name = "Example_MS",
+##'                              resp.name = myRespName,
+##'                              resp.var = myResp,
+##'                              expl.var = myExpl,
+##'                              data.type = "binary",
+##'                              resp.xy = myRespXY)
+##'
+##' params.CV <- list("PantheraOnca" = list(CV.strategy = "random", CV.nb.rep = 2, CV.perc = 0.8),
+##'                   "PteropusGiganteus" = list(CV.strategy = "random", CV.nb.rep = 2, CV.perc = 0.8))
+##' 
+##' params.OPT <- list("PantheraOnca" = list(OPT.strategy = "bigboss"),
+##'                    "PteropusGiganteus" = list(OPT.strategy = "bigboss"))
+##' 
+##' myMSModelOut <- MS_Modeling(myMSData, 
+##'                             modeling.id = "FirstModels",
+##'                             models = c("GLM", "XGBOOST"),
+##'                             params.CV = params.CV,
+##'                             params.OPT = params.OPT)
+##' 
+##' metric.select.tresh.byspecies <- list("PantheraOnca" = 0.5,
+##'                                       "PteropusGiganteus" = 0.4)
+##' 
+##' myMSEM <- MS_EnsembleModeling(myMSModelOut,
+##'                               models.chosen = 'all',
+##'                               em.by = 'all',
+##'                               em.algo = c("EMmean", "EMca"),
+##'                               metric.select = 'TSS',
+##'                               metric.select.thresh = metric.select.tresh.byspecies,
+##'                               metric.eval = c('TSS', 'ROC'))
+##' 
+##' myMSEMProj <- MS_EnsembleForecasting(myMSEM ,
+##'                                      proj.name = "CurrentEM",
+##'                                      new.env = myExpl)
+##' 
+##' 
+##' plot(myMSEMProj, sp = "PantheraOnca")
+##' 
+##' 
+##' \dontshow{
+##'   unlink('Example_MS', recursive = TRUE)
+##' }
+##' 
 ##' 
 ##' @importFrom foreach foreach %dopar% 
 ##' @importFrom terra rast subset nlyr writeRaster terraOptions wrap unwrap
@@ -135,8 +198,8 @@
 
 MS_EnsembleForecasting <- function(ms.em,
                                    ms.proj = NULL,
-                                   proj.name,
-                                   new.env,
+                                   proj.name = NULL,
+                                   new.env = NULL,
                                    new.env.xy = NULL,
                                    models.chosen = 'all',
                                    metric.binary = NULL,
@@ -179,6 +242,8 @@ MS_EnsembleForecasting <- function(ms.em,
                   modeling.id = ms.em@modeling.id,
                   type = "em")
   
+  file.txt <- file.path(ms.em@dir.name, ".BIOMOD_DATA", "output", "MS_EnsembleForecasting.output.txt")
+  cat("Creation of MS.projection.out \n\n", file = file.txt, append = FALSE)
   
   cat("\n")
   workflow <- foreach(sp = ms.em@sp.name) %dopar% {
@@ -194,18 +259,21 @@ MS_EnsembleForecasting <- function(ms.em,
     
     models.chosen.sp <- models.chosen[[sp]]
     # 2. Run MS_EnsembleModeling
-    output <- capture.output(proj_sp <- BIOMOD_EnsembleForecasting(bm.em,
-                                                                   bm.proj = bm.proj,
-                                                                   proj.name = proj.name,
-                                                                   new.env = new.env,
-                                                                   new.env.xy = new.env.xy,
-                                                                   models.chosen = models.chosen.sp,
-                                                                   metric.binary = metric.binary,
-                                                                   metric.filter = metric.filter,
-                                                                   compress = TRUE,
-                                                                   build.clamping.mask = TRUE,
-                                                                   nb.cpu = 1,
-                                                                   seed.val = NULL))
+    capture.output(proj_sp <- BIOMOD_EnsembleForecasting(bm.em,
+                                                         bm.proj = bm.proj,
+                                                         proj.name = proj.name,
+                                                         new.env = new.env,
+                                                         new.env.xy = new.env.xy,
+                                                         models.chosen = models.chosen.sp,
+                                                         metric.binary = metric.binary,
+                                                         metric.filter = metric.filter,
+                                                         compress = TRUE,
+                                                         build.clamping.mask = TRUE,
+                                                         nb.cpu = 1,
+                                                         seed.val = NULL),
+                   file = file.txt, append = TRUE)
+    cat("\n\n", file = file.txt, append = TRUE)
+    
     models.chosen[[sp]] <- proj_sp@models.projected
     
   }
@@ -244,53 +312,54 @@ MS_EnsembleForecasting <- function(ms.em,
   }
   
   ## 3.bis Check new.env ---------------------------------------------------------
-  .fun_testIfInherits(TRUE, "new.env", new.env, c('matrix', 'data.frame', 'SpatRaster','Raster'))
-  
-  if (inherits(new.env, 'matrix')) {
-    if (any(sapply(get_formal_data(ms.em, sp = ms.em@sp.name[1], "expl.var"), is.factor))) {
-      stop("new.env cannot be given as matrix when model involves categorical variables")
+  if (!is.null(new.env)) {
+    .fun_testIfInherits(TRUE, "new.env", new.env, c('matrix', 'data.frame', 'SpatRaster','Raster'))
+    
+    if (inherits(new.env, 'matrix')) {
+      if (any(sapply(get_formal_data(ms.em, sp = ms.em@sp.name[1], "expl.var"), is.factor))) {
+        stop("new.env cannot be given as matrix when model involves categorical variables")
+      }
+      new.env <- data.frame(new.env)
+    } else if (inherits(new.env, 'data.frame')) {
+      # ensure that data.table are coerced into classic data.frame
+      new.env <- as.data.frame(new.env) 
     }
-    new.env <- data.frame(new.env)
-  } else if (inherits(new.env, 'data.frame')) {
-    # ensure that data.table are coerced into classic data.frame
-    new.env <- as.data.frame(new.env) 
-  }
-  
-  if (inherits(new.env, 'Raster')) {
-    # conversion into SpatRaster
-    if (any(raster::is.factor(new.env))) {
-      new.env <- .categorical_stack_to_terra(raster::stack(new.env),
-                                             expected_levels = head(get_formal_data(ms.em, sp = ms.em@sp.name[1], subinfo = "expl.var"))
-      )
+    
+    if (inherits(new.env, 'Raster')) {
+      # conversion into SpatRaster
+      if (any(raster::is.factor(new.env))) {
+        new.env <- .categorical_stack_to_terra(raster::stack(new.env),
+                                               expected_levels = head(get_formal_data(ms.em, sp = ms.em@sp.name[1], subinfo = "expl.var"))
+        )
+      } else {
+        new.env <- rast(new.env)
+      }
+    }
+    
+    if (inherits(new.env, 'SpatRaster')) {
+      .fun_testIfIn(TRUE, "names(new.env)", names(new.env), ms.em@expl.var.names, exact = TRUE)
+      new.env <- new.env[[ms.em@expl.var.names]]
+      new.env.mask <- .get_data_mask(new.env, value.out = 1)
+      new.env <- mask(new.env, new.env.mask)
     } else {
-      new.env <- rast(new.env)
+      .fun_testIfIn(TRUE, "colnames(new.env)", colnames(new.env), ms.em@expl.var.names, exact = TRUE)
+      new.env <- new.env[ , ms.em@expl.var.names, drop = FALSE]
     }
-  }
-  
-  if (inherits(new.env, 'SpatRaster')) {
-    .fun_testIfIn(TRUE, "names(new.env)", names(new.env), ms.em@expl.var.names, exact = TRUE)
-    new.env <- new.env[[ms.em@expl.var.names]]
-    new.env.mask <- .get_data_mask(new.env, value.out = 1)
-    new.env <- mask(new.env, new.env.mask)
-  } else {
-    .fun_testIfIn(TRUE, "colnames(new.env)", colnames(new.env), ms.em@expl.var.names, exact = TRUE)
-    new.env <- new.env[ , ms.em@expl.var.names, drop = FALSE]
-  }
-  
-  which.factor <- which(sapply(new.env, is.factor))
-  if (length(which.factor) > 0) {
-    new.env <- .check_env_levels(new.env, 
-                                 expected_levels = head(get_formal_data(ms.em, sp = ms.em@sp.name[1], subinfo = "expl.var")))
+    
+    which.factor <- which(sapply(new.env, is.factor))
+    if (length(which.factor) > 0) {
+      new.env <- .check_env_levels(new.env, 
+                                   expected_levels = head(get_formal_data(ms.em, sp = ms.em@sp.name[1], subinfo = "expl.var")))
+    }
   }
   
   ## 4. Check models.chosen ---------------------------------------------------
-  if (models.chosen[1] == 'all') {
-    models.chosen <- get_built_models(ms.em)
+  if ( is.null(models.chosen) | (length(models.chosen) == 1 && models.chosen[1] == 'all')) {
+    models.chosen <- as.list(rep("all", length(ms.em@sp.name)))
+    names(models.chosen) <- ms.em@sp.name
   } else {
-    models.chosen <- intersect(models.chosen, get_built_models(ms.em))
-  }
-  if (length(models.chosen) < 1) {
-    stop('No models selected')
+    .fun_testIfInherits(TRUE, "models.chosen", models.chosen, "list")
+    .fun_testIfIn(TRUE, "names(models.chosen)", names(models.chosen), ms.em@sp.name)
   }
   
   ## 4. Check new.env.xy ------------------------------------------------------

@@ -22,4 +22,5 @@ Imports:
     terra
 Suggests: 
     ggtext,
-    tidyterra
+    tidyterra,
+	doParallel

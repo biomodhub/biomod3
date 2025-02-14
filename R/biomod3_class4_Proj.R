@@ -99,7 +99,7 @@ setClass("MS.projection.out",
 ##' @rdname MS.projection.out
 ##' @export
 ##' @importFrom terra global
-##' @importFrom ggplot2 geom_point
+##' @importFrom ggplot2 geom_point ggplot
 ##' @param maxcell maximum number of cells to plot. Argument transmitted to \code{\link[terra]{plot}}.
 ##' 
 
@@ -353,7 +353,12 @@ setMethod("get_predictions", "MS.projection.out",
                    model.as.col = FALSE, ...)
           { 
             nameFolder <- file.path(obj@dir.name, sp, paste0("proj_", obj@proj.name))
-            proj <- get(load(file.path(nameFolder, paste0(sp,".", obj@proj.name, ".projection.out"))))
+            if(obj@type == "mod"){
+              proj <- get(load(file.path(nameFolder, paste0(sp,".", obj@proj.name, ".projection.out"))))
+            } else {
+              proj <- get(load(file.path(nameFolder, paste0(sp,".", obj@proj.name, ".ensemble.projection.out"))))
+            }
+            
             
             # extract layers from obj@proj.out@link concerned by metric.filter or metric.binary
             selected.layers <- .extract_selected.layers(proj, 

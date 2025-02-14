@@ -4,7 +4,8 @@ utils::globalVariables(names = c("categories", "cats", "sub.i", "melt", "i", "i.
                                  ))
 
 ## BIOMOD_ProjectionWrap -------
-utils::globalVariables(names = c("head", "new", "models.chosen.single", "models.chosen.ens"))
+utils::globalVariables(names = c("head", "new", "models.chosen.single", "models.chosen.ens",
+                                 "omit.na", "on_0_1000", "do.stack", "keep.in.memory", "output.format", "overwrite"))
                        
 ## BIOMOD_Wrap -----------------
 utils::globalVariables(names = c("bm.format", "expl.var"))

@@ -81,8 +81,10 @@ setMethod('show', signature('MS.ensemble.models.out'), function(object) {
   cat("\nsp.name :", object@sp.name, fill = .Options$width)
   cat("\nexpl.var.names :", object@expl.var.names, fill = .Options$width)
   cat("\n")
-  cat("\nmodels computed:", toString(object@em.computed), fill = .Options$width)
-  cat("\nmodels failed:", toString(object@em.failed), fill = .Options$width)
+  cat("\nmodels computed:", fill = .Options$width)
+  show(object@em.computed)
+  cat("\nmodels failed:", fill = .Options$width)
+  show(object@em.failed)
   .bm_cat()
 })
 
