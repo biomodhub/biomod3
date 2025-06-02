@@ -19,7 +19,7 @@ BIOMOD_Wrap(
   params.PA,
   models,
   models.pa = NULL,
-  metric.eval = c("KAPPA", "TSS", "ROC"),
+  metric.eval = c("KAPPA", "TSS", "AUCroc"),
   weights = NULL,
   prevalence = NULL,
   scale.models = FALSE,
@@ -40,7 +40,7 @@ A \code{character} corresponding to the modeling folder}
 (\emph{a random number by default})}
 
 \item{data.type}{a \code{character}, corresponding to the response data type to be used, must be either
-\code{binary}, \code{count}, \code{ordinal}, \code{relative}, or \code{abundance}. If data.type is not provided,
+\code{binary}, \code{count}, \code{multiclass}, \code{ordinal}, \code{relative}, or \code{abundance}. If data.type is not provided,
 \code{biomod2} will try to guess.}
 
 \item{resp.name}{a \code{character vector} corresponding to the species name}
@@ -89,7 +89,7 @@ is to be filtered when several points occur in the same raster cell}
 \item{params.PA}{a \code{list} with the species names associated to the parameters of PA}
 
 \item{models}{a \code{vector} containing model names to be computed, must be among
-\code{ANN}, \code{CTA}, \code{FDA}, \code{GAM}, \code{GBM}, \code{GLM}, \code{MARS},
+\code{ANN}, \code{CTA}, \code{DNN}, \code{FDA}, \code{GAM}, \code{GBM}, \code{GLM}, \code{MARS},
 \code{MAXENT}, \code{MAXNET}, \code{RF}, \code{RFd}, \code{SRE}, \code{XGBOOST}}
 
 \item{models.pa}{(\emph{optional, default} \code{NULL}) \cr
@@ -97,7 +97,7 @@ A \code{list} containing for each model a \code{vector} defining which pseudo-ab
 are to be used, must be among \code{colnames(bm.format@PA.table)}}
 
 \item{metric.eval}{a \code{vector} containing evaluation metric names to be used, must
-be among \code{ROC}, \code{TSS}, \code{KAPPA}, \code{ACCURACY}, \code{BIAS}, \code{POD},
+be among \code{AUCroc}, \code{AUCrpg}, \code{TSS}, \code{KAPPA}, \code{ACCURACY}, \code{BIAS}, \code{POD},
 \code{FAR}, \code{POFD}, \code{SR}, \code{CSI}, \code{ETS}, \code{OR},
 \code{ORSS}, \code{BOYCE}, \code{MPA}, \code{RMSE}, \code{MAE}, \code{MSE}, \code{Rsquared}, \code{Rsquared_aj},
 \code{Max_error}, \code{Accuracy}, \code{Recall}, \code{Precision}, \code{F1}}
@@ -178,7 +178,7 @@ myWrap <- BIOMOD_Wrap(modeling.id = "Example",
                       resp.xy = myRespXY,
                       expl.var = myExpl,
                       models = c('RF', 'GLM'),
-                      metric.eval = c("TSS", "ROC"),
+                      metric.eval = c("TSS", "AUCroc"),
                       params.CV = list(CV.strategy = 'random',
                                        CV.nb.rep = 3,
                                        CV.perc = 0.7),

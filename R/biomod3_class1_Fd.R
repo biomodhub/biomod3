@@ -126,7 +126,7 @@ setMethod('plot', signature(x = 'MS.formated.data', y = "missing"),
                    plot.eval,
                    point.size = 1.5,
                    do.plot = TRUE){
-
+            
             args <- .plot.BIOMOD.formated.data.check.args(x = x,
                                                           #calib.lines = calib.lines,
                                                           plot.type = plot.type,
@@ -138,13 +138,12 @@ setMethod('plot', signature(x = 'MS.formated.data', y = "missing"),
             
             for (argi in names(args)) { assign(x = argi, value = args[[argi]]) }
             rm(args)
-            
             # 1 - extract data for all required data ----------------------
             
             nameFolder <- file.path(x@dir.name, x@ms.project, ".BIOMOD_DATA", "single.formated.data")
             table <- foreach(sp = x@sp.name, .combine = merge) %do% {
               sfd <- get(load(file.path(nameFolder, paste0(sp,".sfd"))))
-              plot_sfd <- plot(sfd, do.plot = FALSE)
+              plot_sfd <- biomod2::plot(sfd, do.plot = FALSE)
               df <- plot_sfd$data.plot$data
               names(df) <- c(sp, "dataset", "x", "y")
               return(df)

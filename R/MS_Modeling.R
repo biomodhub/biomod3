@@ -12,7 +12,7 @@
 ##' @param modeling.id a \code{character} corresponding to the name (ID) of the simulation set 
 ##' (\emph{a random number by default})
 ##' @param models a \code{vector} containing model names to be computed, must be among 
-##' \code{ANN}, \code{CTA}, \code{FDA}, \code{GAM}, \code{GBM}, \code{GLM}, \code{MARS}, 
+##' \code{ANN}, \code{CTA}, \code{DNN}, \code{FDA}, \code{GAM}, \code{GBM}, \code{GLM}, \code{MARS}, 
 ##' \code{MAXENT}, \code{MAXNET}, \code{RF}, \code{RFd}, \code{SRE}, \code{XGBOOST}
 ##' 
 ##' @param params.CV a \code{list} with the species names associated to the parameters of Cross-Validation. See BIOMOD_Modeling
@@ -26,7 +26,7 @@
 ##' A \code{numeric} between \code{0} and \code{1} corresponding to the species prevalence to 
 ##' build '\emph{weighted response weights}' (see Details)
 ##' @param metric.eval a \code{vector} containing evaluation metric names to be used, must 
-##' be among \code{ROC}, \code{TSS}, \code{KAPPA}, \code{ACCURACY}, \code{BIAS}, \code{POD}, 
+##' be among \code{AUCroc}, \code{AUCrpg}, \code{TSS}, \code{KAPPA}, \code{ACCURACY}, \code{BIAS}, \code{POD}, 
 ##' \code{FAR}, \code{POFD}, \code{SR}, \code{CSI}, \code{ETS}, \code{OR}, 
 ##' \code{ORSS}, \code{BOYCE}, \code{MPA}, \code{RMSE}, \code{MAE}, \code{MSE}, \code{Rsquared}, \code{Rsquared_aj},
 ##' \code{Max_error}, \code{Accuracy}, \code{"Recall"}, \code{"Precision"}, \code{"F1"}
@@ -108,13 +108,13 @@
 
 MS_Modeling <- function(ms.format,
                             modeling.id = as.character(format(Sys.time(), "%s")),
-                            models = c('ANN', 'CTA', 'FDA', 'GAM', 'GBM', 'GLM', 'MARS'
+                            models = c('ANN', 'DNN', 'CTA', 'FDA', 'GAM', 'GBM', 'GLM', 'MARS'
                                        , 'MAXNET', 'RF', 'RFd', 'SRE', 'XGBOOST'),
                             params.CV = NULL,
                             params.OPT = NULL,
                             weights = NULL,
                             prevalence = NULL,
-                            metric.eval = c('KAPPA', 'TSS', 'ROC'),
+                            metric.eval = c('KAPPA', 'TSS', 'AUCroc'),
                             var.import = 0,
                             scale.models = FALSE,
                             nb.cpu = 1,
@@ -240,11 +240,13 @@ MS_Modeling <- function(ms.format,
   
   ## check if model is supported
   if (ms.format@data.type == "binary"){
-    avail.models.list <- c('ANN', 'CTA', 'FDA', 'GAM', 'GBM', 'GLM', 'MARS', 'MAXENT', 'MAXNET', 'RF','RFd', 'SRE', 'XGBOOST')
+    avail.models.list <- c('ANN', 'CTA', 'DNN', 'FDA', 'GAM', 'GBM', 'GLM', 'MARS', 'MAXENT', 'MAXNET', 'RF','RFd', 'SRE', 'XGBOOST')
   } else if (ms.format@data.type == "ordinal") {
-    avail.models.list <- c('CTA', 'FDA', 'GAM', 'GLM', 'MARS', 'RF', 'XGBOOST')
+    avail.models.list <- c('CTA', 'DNN', 'FDA', 'GAM', 'GLM', 'MARS', 'RF', 'XGBOOST')
+  } else if (ms.format@data.type == "multiclass") {
+    avail.models.list <- c('CTA', 'DNN', 'FDA', 'MARS', 'RF', 'XGBOOST')
   } else {
-    avail.models.list <- c('CTA', 'GAM', 'GBM', 'GLM', 'MARS', 'RF', 'XGBOOST')
+    avail.models.list <- c('CTA', 'DNN', 'GAM', 'GBM', 'GLM', 'MARS', 'RF', 'XGBOOST')
   }
   .fun_testIfIn(TRUE, paste0("models with ", ms.format@data.type, " data type"), models, avail.models.list)
   
@@ -332,9 +334,9 @@ MS_Modeling <- function(ms.format,
   metric.eval <- unique(metric.eval)
   if (ms.format@data.type == "binary") {
     avail.eval.meth.list <- c('TSS', 'KAPPA', 'ACCURACY', 'BIAS', 'POD', 'FAR', 'POFD'
-                              , 'SR', 'CSI', 'ETS', 'HK', 'HSS', 'OR', 'ORSS', 'ROC'
+                              , 'SR', 'CSI', 'ETS', 'HK', 'HSS', 'OR', 'ORSS', 'AUCroc', 'AUCrpg'
                               , 'BOYCE', 'MPA')
-  } else if (ms.format@data.type == "ordinal") {
+  } else if (ms.format@data.type %in% c("ordinal", "multiclass")) {
     avail.eval.meth.list <- c("Accuracy", "Recall", "Precision", "F1")
   } else {
     avail.eval.meth.list <- c('RMSE','MSE',"MAE","Rsquared","Rsquared_aj","Max_error")

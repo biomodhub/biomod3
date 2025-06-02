@@ -53,7 +53,7 @@ A \code{vector} containing evaluation metric names to be used to transform predi
 into binary values based on models evaluation scores obtained with the
 \code{\link{BIOMOD_Modeling}} function. Must be among \code{all} (same evaluation metrics than
 those of \code{ms.em}) or \code{POD}, \code{FAR}, \code{POFD}, \code{SR}, \code{ACCURACY},
-\code{BIAS}, \code{ROC}, \code{TSS}, \code{KAPPA}, \code{OR}, \code{ORSS}, \code{CSI},
+\code{BIAS}, \code{AUCroc}, \code{AUCrpg}, \code{TSS}, \code{KAPPA}, \code{OR}, \code{ORSS}, \code{CSI},
 \code{ETS}, \code{BOYCE}, \code{MPA}}
 
 \item{metric.filter}{(\emph{optional, default} \code{NULL}) \cr
@@ -61,7 +61,7 @@ A \code{vector} containing evaluation metric names to be used to transform predi
 into filtered values based on models evaluation scores obtained with the
 \code{\link{BIOMOD_Modeling}} function. Must be among \code{all} (same evaluation metrics than
 those of \code{ms.em}) or \code{POD}, \code{FAR}, \code{POFD}, \code{SR}, \code{ACCURACY},
-\code{BIAS}, \code{ROC}, \code{TSS}, \code{KAPPA}, \code{OR}, \code{ORSS}, \code{CSI},
+\code{BIAS}, \code{AUCroc}, \code{AUCrpg}, \code{TSS}, \code{KAPPA}, \code{OR}, \code{ORSS}, \code{CSI},
 \code{ETS}, \code{BOYCE}, \code{MPA}}
 
 \item{compress}{(\emph{optional, default} \code{TRUE}) \cr
@@ -181,7 +181,7 @@ myMSEM <- MS_EnsembleModeling(myMSModelOut,
                               em.algo = c("EMmean", "EMca"),
                               metric.select = 'TSS',
                               metric.select.thresh = metric.select.tresh.byspecies,
-                              metric.eval = c('TSS', 'ROC'))
+                              metric.eval = c('TSS', 'AUCroc'))
 
 myMSEMProj <- MS_EnsembleForecasting(myMSEM ,
                                      proj.name = "CurrentEM",

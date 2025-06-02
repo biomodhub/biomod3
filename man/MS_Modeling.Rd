@@ -7,13 +7,13 @@
 MS_Modeling(
   ms.format,
   modeling.id = as.character(format(Sys.time(), "\%s")),
-  models = c("ANN", "CTA", "FDA", "GAM", "GBM", "GLM", "MARS", "MAXNET", "RF", "RFd",
-    "SRE", "XGBOOST"),
+  models = c("ANN", "DNN", "CTA", "FDA", "GAM", "GBM", "GLM", "MARS", "MAXNET", "RF",
+    "RFd", "SRE", "XGBOOST"),
   params.CV = NULL,
   params.OPT = NULL,
   weights = NULL,
   prevalence = NULL,
-  metric.eval = c("KAPPA", "TSS", "ROC"),
+  metric.eval = c("KAPPA", "TSS", "AUCroc"),
   var.import = 0,
   scale.models = FALSE,
   nb.cpu = 1,
@@ -27,7 +27,7 @@ MS_Modeling(
 (\emph{a random number by default})}
 
 \item{models}{a \code{vector} containing model names to be computed, must be among
-\code{ANN}, \code{CTA}, \code{FDA}, \code{GAM}, \code{GBM}, \code{GLM}, \code{MARS},
+\code{ANN}, \code{CTA}, \code{DNN}, \code{FDA}, \code{GAM}, \code{GBM}, \code{GLM}, \code{MARS},
 \code{MAXENT}, \code{MAXNET}, \code{RF}, \code{RFd}, \code{SRE}, \code{XGBOOST}}
 
 \item{params.CV}{a \code{list} with the species names associated to the parameters of Cross-Validation. See BIOMOD_Modeling}
@@ -43,7 +43,7 @@ A \code{numeric} between \code{0} and \code{1} corresponding to the species prev
 build '\emph{weighted response weights}' (see Details)}
 
 \item{metric.eval}{a \code{vector} containing evaluation metric names to be used, must
-be among \code{ROC}, \code{TSS}, \code{KAPPA}, \code{ACCURACY}, \code{BIAS}, \code{POD},
+be among \code{AUCroc}, \code{AUCrpg}, \code{TSS}, \code{KAPPA}, \code{ACCURACY}, \code{BIAS}, \code{POD},
 \code{FAR}, \code{POFD}, \code{SR}, \code{CSI}, \code{ETS}, \code{OR},
 \code{ORSS}, \code{BOYCE}, \code{MPA}, \code{RMSE}, \code{MAE}, \code{MSE}, \code{Rsquared}, \code{Rsquared_aj},
 \code{Max_error}, \code{Accuracy}, \code{"Recall"}, \code{"Precision"}, \code{"F1"}}

@@ -16,7 +16,7 @@
 ##' 
 ##' @param resp.var a \code{vector} or a \code{\link[terra:vect]{SpatVector}} containing your response variable (See Details).
 ##' @param data.type a \code{character}, corresponding to the response data type to be used, must be either 
-##' \code{binary}, \code{count}, \code{ordinal}, \code{relative}, or \code{abundance}. If data.type is not provided,
+##' \code{binary}, \code{count}, \code{multiclass}, \code{ordinal}, \code{relative}, or \code{abundance}. If data.type is not provided,
 ##' \code{biomod2} will try to guess.
 ##' 
 ##' @param expl.var a \code{matrix}, \code{data.frame}, \code{\link[terra:vect]{SpatVector}}

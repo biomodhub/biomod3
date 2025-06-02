@@ -578,24 +578,24 @@ rast.has.values <- function(x)
 ## ABUNDANCE tools --------------------------------------------------------------------------------
 
 ## used in biomod2_classes_1
-.which.data.type <- function(resp.var)
-{
-  if (is.factor(resp.var)) {
-    data.type <- ifelse(nlevels(resp.var) <= 2, "binary", "ordinal")
-  } else {
-    element <- sort(unique(resp.var))
-    if (identical(as.numeric(element), c(0, 1)) | identical(as.numeric(element), 1)) {
-      data.type <- "binary"
-    } else {
-      if (identical(as.numeric(as.integer(element)), element)) {
-        data.type <- "count"
-      } else {
-        data.type <- ifelse(!any(resp.var > 1), "relative", "abundance")
-      }
-    }
-  } 
-  return(data.type)
-}
+# .which.data.type <- function(resp.var)
+# {
+#   if (is.factor(resp.var)) {
+#     data.type <- ifelse(nlevels(resp.var) <= 2, "binary", "ordinal")
+#   } else {
+#     element <- sort(unique(resp.var))
+#     if (identical(as.numeric(element), c(0, 1)) | identical(as.numeric(element), 1)) {
+#       data.type <- "binary"
+#     } else {
+#       if (identical(as.numeric(as.integer(element)), element)) {
+#         data.type <- "count"
+#       } else {
+#         data.type <- ifelse(!any(resp.var > 1), "relative", "abundance")
+#       }
+#     }
+#   } 
+#   return(data.type)
+# }
 
 ## used in bm_RunModelsLoop
 .numeric2factor <- function(pred, obs)

@@ -96,7 +96,7 @@ setClass("BIOMOD.stored.ms.models.out",
 ##' \code{RUN2}, \code{...}, \code{allRun}
 ##' @param algo (\emph{optional, default} \code{NULL}) \cr 
 ##' A \code{character} containing algorithm to be loaded, must be either 
-##' \code{ANN}, \code{CTA}, \code{FDA}, \code{GAM}, \code{GBM}, \code{GLM}, \code{MARS}, 
+##' \code{ANN}, \code{CTA}, \code{DNN}, \code{FDA}, \code{GAM}, \code{GBM}, \code{GLM}, \code{MARS}, 
 ##' \code{MAXENT}, \code{MAXNET}, \code{RF}, \code{SRE}, \code{XGBOOST}
 ##' 
 ##' @param merged.by.PA (\emph{optional, default} \code{NULL}) \cr 
@@ -107,17 +107,17 @@ setClass("BIOMOD.stored.ms.models.out",
 ##' \code{RUN2}, \code{...}, \code{mergedRun}
 ##' @param merged.by.algo (\emph{optional, default} \code{NULL}) \cr 
 ##' A \code{character} containing merged algorithm to be loaded, must be among 
-##' \code{ANN}, \code{CTA}, \code{FDA}, \code{GAM}, \code{GBM}, \code{GLM}, \code{MARS}, 
+##' \code{ANN}, \code{CTA}, \code{DNN}, \code{FDA}, \code{GAM}, \code{GBM}, \code{GLM}, \code{MARS}, 
 ##' \code{MAXENT}, \code{MAXNET}, \code{RF}, \code{SRE}, \code{XGBOOST}, \code{mergedAlgo}
 ##' @param filtered.by (\emph{optional, default} \code{NULL}) \cr 
 ##' A \code{vector} containing evaluation metric selected to filter single models to build the 
 ##' ensemble models, must be among \code{POD}, \code{FAR}, \code{POFD}, \code{SR}, 
-##' \code{ACCURACY}, \code{BIAS}, \code{ROC}, \code{TSS}, \code{KAPPA}, \code{OR}, \code{ORSS}, 
+##' \code{ACCURACY}, \code{BIAS}, \code{AUCroc}, \code{AUCrpg}, \code{TSS}, \code{KAPPA}, \code{OR}, \code{ORSS}, 
 ##' \code{CSI}, \code{ETS}, \code{BOYCE}, \code{MPA}
 ##' 
 ##' @param metric.eval (\emph{optional, default} \code{NULL}) \cr 
 ##' A \code{vector} containing evaluation metric to be kept, must be among \code{POD}, 
-##' \code{FAR}, \code{POFD}, \code{SR}, \code{ACCURACY}, \code{BIAS}, \code{ROC}, \code{TSS}, 
+##' \code{FAR}, \code{POFD}, \code{SR}, \code{ACCURACY}, \code{BIAS}, \code{AUCroc}, \code{AUCrpg}, \code{TSS}, 
 ##' \code{KAPPA}, \code{OR}, \code{ORSS}, \code{CSI}, \code{ETS}, \code{BOYCE}, \code{MPA}
 ##' @param expl.var (\emph{optional, default} \code{NULL}) \cr 
 ##' A \code{vector} containing explanatory variables to be kept, that can be obtained with the 
@@ -126,11 +126,11 @@ setClass("BIOMOD.stored.ms.models.out",
 ##' @param metric.binary (\emph{optional, default} \code{NULL}) \cr 
 ##' A \code{vector} containing evaluation metric selected to transform predictions into binary 
 ##' values, must be among \code{POD}, \code{FAR}, \code{POFD}, \code{SR}, \code{ACCURACY}, 
-##' \code{BIAS}, \code{ROC}, \code{TSS}, \code{KAPPA}, \code{OR}, \code{ORSS}, \code{CSI}, 
+##' \code{BIAS}, \code{AUCroc}, \code{AUCrpg}, \code{TSS}, \code{KAPPA}, \code{OR}, \code{ORSS}, \code{CSI}, 
 ##' \code{ETS}, \code{BOYCE}, \code{MPA}
 ##' @param metric.filter (\emph{optional, default} \code{NULL}) \cr 
 ##' A \code{vector} containing evaluation metric to filter predictions, must be among \code{POD}, 
-##' \code{FAR}, \code{POFD}, \code{SR}, \code{ACCURACY}, \code{BIAS}, \code{ROC}, \code{TSS}, 
+##' \code{FAR}, \code{POFD}, \code{SR}, \code{ACCURACY}, \code{BIAS}, \code{AUCroc}, \code{AUCrpg}, \code{TSS}, 
 ##' \code{KAPPA}, \code{OR}, \code{ORSS}, \code{CSI}, \code{ETS}, \code{BOYCE}, \code{MPA}
 ##' 
 ##' @param model.as.col (\emph{optional, default} \code{FALSE}) \cr

@@ -95,7 +95,7 @@
 ##' (for ensemble methods like probability weighted mean or committee averaging). Must be among  
 ##' \code{all} (same evaluation metrics than those of \code{bm.mod}), \code{user.defined} 
 ##' (and defined through \code{metric.select.table}) or \code{POD}, \code{FAR}, \code{POFD}, 
-##' \code{SR}, \code{ACCURACY}, \code{BIAS}, \code{ROC}, \code{TSS}, \code{KAPPA}, \code{OR}, 
+##' \code{SR}, \code{ACCURACY}, \code{BIAS}, \code{AUCroc}, \code{AUCrpg}, \code{TSS}, \code{KAPPA}, \code{OR}, 
 ##' \code{ORSS}, \code{CSI}, \code{ETS}, \code{BOYCE}, \code{MPA}, \code{RMSE}, \code{MAE}, 
 ##' \code{MSE}, \code{Rsquared}, \code{Rsquared_aj}, \code{Max_error}, \code{Accuracy}, \code{Recall},
 ##' \code{Precision}, \code{F1}
@@ -316,7 +316,7 @@ bm_SpeciesParameters <- function(resp.name,
   
   metric.select <- unique(metric.select)
   avail.eval.meth.list <- c('TSS', 'KAPPA', 'ACCURACY', 'BIAS', 'POD', 'FAR', 'POFD'
-                            , 'SR', 'CSI', 'ETS', 'HK', 'HSS', 'OR', 'ORSS', 'ROC'
+                            , 'SR', 'CSI', 'ETS', 'HK', 'HSS', 'OR', 'ORSS', 'AUCroc', 'AUCrpg'
                             , 'BOYCE', 'MPA',
                             "Accuracy", "Recall", "Precision", "F1",
                             'RMSE','MSE',"MAE","Rsquared","Rsquared_aj","Max_error")

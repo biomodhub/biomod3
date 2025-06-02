@@ -36,14 +36,14 @@
 ##' into binary values based on models evaluation scores obtained with the 
 ##' \code{\link{BIOMOD_Modeling}} function. Must be among \code{all} (same evaluation metrics than 
 ##' those of \code{ms.em}) or \code{POD}, \code{FAR}, \code{POFD}, \code{SR}, \code{ACCURACY}, 
-##' \code{BIAS}, \code{ROC}, \code{TSS}, \code{KAPPA}, \code{OR}, \code{ORSS}, \code{CSI}, 
+##' \code{BIAS}, \code{AUCroc}, \code{AUCrpg}, \code{TSS}, \code{KAPPA}, \code{OR}, \code{ORSS}, \code{CSI}, 
 ##' \code{ETS}, \code{BOYCE}, \code{MPA}
 ##' @param metric.filter (\emph{optional, default} \code{NULL}) \cr 
 ##' A \code{vector} containing evaluation metric names to be used to transform prediction values 
 ##' into filtered values based on models evaluation scores obtained with the 
 ##' \code{\link{BIOMOD_Modeling}} function. Must be among \code{all} (same evaluation metrics than 
 ##' those of \code{ms.em}) or \code{POD}, \code{FAR}, \code{POFD}, \code{SR}, \code{ACCURACY}, 
-##' \code{BIAS}, \code{ROC}, \code{TSS}, \code{KAPPA}, \code{OR}, \code{ORSS}, \code{CSI}, 
+##' \code{BIAS}, \code{AUCroc}, \code{AUCrpg}, \code{TSS}, \code{KAPPA}, \code{OR}, \code{ORSS}, \code{CSI}, 
 ##' \code{ETS}, \code{BOYCE}, \code{MPA}
 ##' 
 ##' @param compress (\emph{optional, default} \code{TRUE}) \cr 
@@ -170,7 +170,7 @@
 ##'                               em.algo = c("EMmean", "EMca"),
 ##'                               metric.select = 'TSS',
 ##'                               metric.select.thresh = metric.select.tresh.byspecies,
-##'                               metric.eval = c('TSS', 'ROC'))
+##'                               metric.eval = c('TSS', 'AUCroc'))
 ##' 
 ##' myMSEMProj <- MS_EnsembleForecasting(myMSEM ,
 ##'                                      proj.name = "CurrentEM",
@@ -461,7 +461,7 @@ MS_EnsembleForecasting <- function(ms.em,
   ## 10.on_0_1000 --------------------------------
   
   on_0_1000 <- ifelse(is.null(args$on_0_1000), TRUE, args$on_0_1000)
-  if (ms.em@data.type %in% c("count","abundance","ordinal")) {on_0_1000 <- FALSE}
+  if (ms.em@data.type %in% c("count","abundance","ordinal", "multiclass")) {on_0_1000 <- FALSE}
   
   ## 11.Check overwrite
   overwrite <- ifelse(is.null(args$overwrite), ifelse(do.stack, TRUE, FALSE), args$overwrite)

@@ -27,7 +27,7 @@
 ##' (for ensemble methods like probability weighted mean or committee averaging). Must be among  
 ##' \code{all} (same evaluation metrics than those of \code{bm.mod}), \code{user.defined} 
 ##' (and defined through \code{metric.select.table}) or \code{POD}, \code{FAR}, \code{POFD}, 
-##' \code{SR}, \code{ACCURACY}, \code{BIAS}, \code{ROC}, \code{TSS}, \code{KAPPA}, \code{OR}, 
+##' \code{SR}, \code{ACCURACY}, \code{BIAS}, \code{AUCroc}, \code{AUCrpg}, \code{TSS}, \code{KAPPA}, \code{OR}, 
 ##' \code{ORSS}, \code{CSI}, \code{ETS}, \code{BOYCE}, \code{MPA}
 ##' @param metric.select.thresh (\emph{optional, default} \code{NULL}) \cr 
 ##' A \code{vector} of \code{numeric} values corresponding to the minimum scores (one for each 
@@ -43,7 +43,7 @@
 ##' weigh the ensemble models should be among 'evaluation', 'validation' or 'calibration'.
 ##' @param metric.eval a \code{vector} containing evaluation metric names to be used, must 
 ##' be among  \code{POD}, \code{FAR}, \code{POFD}, \code{SR}, \code{ACCURACY}, \code{BIAS}, 
-##' \code{ROC}, \code{TSS}, \code{KAPPA}, \code{OR}, \code{ORSS}, \code{CSI}, \code{ETS}, 
+##' \code{AUCroc}, \code{AUCrpg}, \code{TSS}, \code{KAPPA}, \code{OR}, \code{ORSS}, \code{CSI}, \code{ETS}, 
 ##' \code{BOYCE}, \code{MPA}
 ##' @param var.import (\emph{optional, default} \code{NULL}) \cr 
 ##' An \code{integer} corresponding to the number of permutations to be done for each variable to 
@@ -128,7 +128,7 @@
 ##'                               em.algo = c("EMmean", "EMca"),
 ##'                               metric.select = 'TSS',
 ##'                               metric.select.thresh = metric.select.tresh.byspecies,
-##'                               metric.eval = c('TSS', 'ROC'))
+##'                               metric.eval = c('TSS', 'AUCroc'))
 ##' 
 ##' myMSEM
 ##' 
@@ -155,7 +155,7 @@ MS_EnsembleModeling <- function(ms.mod,
                                 metric.select.thresh = NULL,
                                 metric.select.table = NULL,
                                 metric.select.dataset = NULL,
-                                metric.eval = c('KAPPA', 'TSS', 'ROC'),
+                                metric.eval = c('KAPPA', 'TSS', 'AUCroc'),
                                 var.import = 0,
                                 EMci.alpha = 0.05,
                                 EMwmean.decay = 'proportional',
@@ -410,9 +410,9 @@ MS_EnsembleModeling <- function(ms.mod,
   metric.eval <- unique(metric.eval)
   if (ms.mod@data.type == "binary"){
     avail.eval.meth.list <- c('TSS', 'KAPPA', 'ACCURACY', 'BIAS', 'POD', 'FAR', 'POFD'
-                              , 'SR', 'CSI', 'ETS', 'HK', 'HSS', 'OR', 'ORSS', 'ROC'
+                              , 'SR', 'CSI', 'ETS', 'HK', 'HSS', 'OR', 'ORSS', 'AUCroc', 'AUCrpg'
                               , 'BOYCE', 'MPA')
-  } else if (ms.mod@data.type == "ordinal"){
+  } else if (ms.mod@data.type %in% c("ordinal", "multiclass")){
     avail.eval.meth.list <- c("Accuracy", "Recall", "Precision", "F1")
   } else {
     avail.eval.meth.list <- c('RMSE','MSE',"MAE","Rsquared","Rsquared_aj","Max_error")

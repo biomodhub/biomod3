@@ -38,7 +38,7 @@ or \code{\link[terra:rast]{SpatRaster}} object containing the explanatory variab
 \code{RasterStack} and \code{SpatialPointsDataFrame} objects. }}
 
 \item{data.type}{a \code{character}, corresponding to the response data type to be used, must be either
-\code{binary}, \code{count}, \code{ordinal}, \code{relative}, or \code{abundance}. If data.type is not provided,
+\code{binary}, \code{count}, \code{multiclass}, \code{ordinal}, \code{relative}, or \code{abundance}. If data.type is not provided,
 \code{biomod2} will try to guess.}
 
 \item{resp.xy}{(\emph{optional, default} \code{NULL}) \cr

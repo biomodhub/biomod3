@@ -13,7 +13,7 @@ MS_EnsembleModeling(
   metric.select.thresh = NULL,
   metric.select.table = NULL,
   metric.select.dataset = NULL,
-  metric.eval = c("KAPPA", "TSS", "ROC"),
+  metric.eval = c("KAPPA", "TSS", "AUCroc"),
   var.import = 0,
   EMci.alpha = 0.05,
   EMwmean.decay = "proportional",
@@ -42,7 +42,7 @@ must be among \code{'EMmean'}, \code{'EMmedian'}, \code{'EMcv'}, \code{'EMci'},
 (for ensemble methods like probability weighted mean or committee averaging). Must be among
 \code{all} (same evaluation metrics than those of \code{bm.mod}), \code{user.defined}
 (and defined through \code{metric.select.table}) or \code{POD}, \code{FAR}, \code{POFD},
-\code{SR}, \code{ACCURACY}, \code{BIAS}, \code{ROC}, \code{TSS}, \code{KAPPA}, \code{OR},
+\code{SR}, \code{ACCURACY}, \code{BIAS}, \code{AUCroc}, \code{AUCrpg}, \code{TSS}, \code{KAPPA}, \code{OR},
 \code{ORSS}, \code{CSI}, \code{ETS}, \code{BOYCE}, \code{MPA}}
 
 \item{metric.select.thresh}{(\emph{optional, default} \code{NULL}) \cr
@@ -62,7 +62,7 @@ weigh the ensemble models should be among 'evaluation', 'validation' or 'calibra
 
 \item{metric.eval}{a \code{vector} containing evaluation metric names to be used, must
 be among  \code{POD}, \code{FAR}, \code{POFD}, \code{SR}, \code{ACCURACY}, \code{BIAS},
-\code{ROC}, \code{TSS}, \code{KAPPA}, \code{OR}, \code{ORSS}, \code{CSI}, \code{ETS},
+\code{AUCroc}, \code{AUCrpg}, \code{TSS}, \code{KAPPA}, \code{OR}, \code{ORSS}, \code{CSI}, \code{ETS},
 \code{BOYCE}, \code{MPA}}
 
 \item{var.import}{(\emph{optional, default} \code{NULL}) \cr
@@ -146,7 +146,7 @@ myMSEM <- MS_EnsembleModeling(myMSModelOut,
                               em.algo = c("EMmean", "EMca"),
                               metric.select = 'TSS',
                               metric.select.thresh = metric.select.tresh.byspecies,
-                              metric.eval = c('TSS', 'ROC'))
+                              metric.eval = c('TSS', 'AUCroc'))
 
 myMSEM
 

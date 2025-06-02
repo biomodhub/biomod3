@@ -17,7 +17,7 @@
 ##' 
 ##' @param resp.var a \code{vector} or a \code{\link[terra:vect]{SpatVector}} containing your response variable (See Details).
 ##' @param data.type a \code{character}, corresponding to the response data type to be used, must be either 
-##' \code{binary}, \code{count}, \code{ordinal}, \code{relative}, or \code{abundance}. If data.type is not provided,
+##' \code{binary}, \code{count}, \code{multiclass}, \code{ordinal}, \code{relative}, or \code{abundance}. If data.type is not provided,
 ##' \code{biomod2} will try to guess.
 ##' 
 ##' @param expl.var a \code{matrix}, \code{data.frame}, \code{\link[terra:vect]{SpatVector}}
@@ -54,7 +54,7 @@
 ##' the species distribution model(s) with independent data
 ##' 
 ##' @param models a \code{vector} containing model names to be computed, must be among 
-##' \code{ANN}, \code{CTA}, \code{FDA}, \code{GAM}, \code{GBM}, \code{GLM}, \code{MARS}, 
+##' \code{ANN}, \code{CTA}, \code{DNN}, \code{FDA}, \code{GAM}, \code{GBM}, \code{GLM}, \code{MARS}, 
 ##' \code{MAXENT}, \code{MAXNET}, \code{RF}, \code{RFd}, \code{SRE}, \code{XGBOOST}
 ##' @param models.pa (\emph{optional, default} \code{NULL}) \cr 
 ##' A \code{list} containing for each model a \code{vector} defining which pseudo-absence datasets 
@@ -66,7 +66,7 @@
 ##' A \code{numeric} between \code{0} and \code{1} corresponding to the species prevalence to 
 ##' build '\emph{weighted response weights}' (see Details)
 ##' @param metric.eval a \code{vector} containing evaluation metric names to be used, must 
-##' be among \code{ROC}, \code{TSS}, \code{KAPPA}, \code{ACCURACY}, \code{BIAS}, \code{POD}, 
+##' be among \code{AUCroc}, \code{AUCrpg}, \code{TSS}, \code{KAPPA}, \code{ACCURACY}, \code{BIAS}, \code{POD}, 
 ##' \code{FAR}, \code{POFD}, \code{SR}, \code{CSI}, \code{ETS}, \code{OR}, 
 ##' \code{ORSS}, \code{BOYCE}, \code{MPA}, \code{RMSE}, \code{MAE}, \code{MSE}, \code{Rsquared}, \code{Rsquared_aj},
 ##' \code{Max_error}, \code{Accuracy}, \code{Recall}, \code{Precision}, \code{F1}
@@ -136,7 +136,7 @@
 ##'                       resp.xy = myRespXY,
 ##'                       expl.var = myExpl,
 ##'                       models = c('RF', 'GLM'),
-##'                       metric.eval = c("TSS", "ROC"),
+##'                       metric.eval = c("TSS", "AUCroc"),
 ##'                       params.CV = list(CV.strategy = 'random',
 ##'                                        CV.nb.rep = 3,
 ##'                                        CV.perc = 0.7),
@@ -179,7 +179,7 @@ BIOMOD_Wrap <- function(dir.name = ".",
                         params.PA,
                         models, ### mettre un défaut ? 
                         models.pa = NULL,
-                        metric.eval = c("KAPPA", "TSS", "ROC"),
+                        metric.eval = c("KAPPA", "TSS", "AUCroc"),
                         weights = NULL,
                         prevalence = NULL,
                         scale.models = FALSE,
@@ -225,51 +225,51 @@ BIOMOD_Wrap <- function(dir.name = ".",
   cat("\n\t > Formating Data")
   #output <- capture.output(
     formated.data <- BIOMOD_FormatingData(dir.name = dir.name,
-                                                                 resp.var = resp.var,
-                                                                 expl.var = expl.var,
-                                                                 resp.xy = resp.xy,
-                                                                 resp.name = resp.name,
-                                                                 eval.resp.var = eval.resp.var,
-                                                                 eval.expl.var = eval.expl.var,
-                                                                 eval.resp.xy = eval.resp.xy,
-                                                                 PA.nb.rep = params.PA$PA.nb.rep,
-                                                                 PA.nb.absences = params.PA$PA.nb.absences,
-                                                                 PA.strategy = params.PA$PA.strategy,
-                                                                 PA.dist.min = params.PA$PA.dist.min,
-                                                                 PA.dist.max = params.PA$PA.dist.max,
-                                                                 PA.sre.quant = params.PA$PA.sre.quant,
-                                                                 PA.fact.aggr = params.PA$PA.fact.aggr,
-                                                                 PA.user.table = params.PA$PA.user.table,
-                                                                 na.rm = T,
-                                                                 seed.val = NULL,
-                                                                 filter.raster = filter.raster)
+                                          resp.var = resp.var,
+                                          expl.var = expl.var,
+                                          resp.xy = resp.xy,
+                                          resp.name = resp.name,
+                                          eval.resp.var = eval.resp.var,
+                                          eval.expl.var = eval.expl.var,
+                                          eval.resp.xy = eval.resp.xy,
+                                          PA.nb.rep = params.PA$PA.nb.rep,
+                                          PA.nb.absences = params.PA$PA.nb.absences,
+                                          PA.strategy = params.PA$PA.strategy,
+                                          PA.dist.min = params.PA$PA.dist.min,
+                                          PA.dist.max = params.PA$PA.dist.max,
+                                          PA.sre.quant = params.PA$PA.sre.quant,
+                                          PA.fact.aggr = params.PA$PA.fact.aggr,
+                                          PA.user.table = params.PA$PA.user.table,
+                                          na.rm = T,
+                                          seed.val = NULL,
+                                          filter.raster = filter.raster)
    # )
   
   cat("\n\t > Single Models")
   #output <- capture.output(
     single.models <- BIOMOD_Modeling(formated.data,
-                                                         modeling.id = modeling.id,
-                                                         models = models,
-                                                         CV.strategy = params.CV$CV.strategy,
-                                                         CV.nb.rep = params.CV$CV.nb.rep,
-                                                         CV.perc = params.CV$CV.perc,
-                                                         CV.k = params.CV$CV.k,
-                                                         CV.balance = params.CV$CV.balance,
-                                                         CV.env.var = params.CV$CV.env.var,
-                                                         CV.strat = params.CV$CV.strat,
-                                                         CV.user.table = params.CV$CV.user.table,
-                                                         CV.do.full.models = TRUE,
-                                                         OPT.strategy = params.OPT$OPT.strategy,
-                                                         OPT.user.val = params.OPT$OPT.user.val,
-                                                         OPT.user.base = params.OPT$OPT.user.base,
-                                                         OPT.user = params.OPT$OPT.user,
-                                                         weights = weights,
-                                                         prevalence = prevalence,
-                                                         metric.eval = metric.eval,
-                                                         var.import = var.import,
-                                                         scale.models = scale.models,
-                                                         nb.cpu = nb.cpu,
-                                                         seed.val = NULL)
+                                     modeling.id = modeling.id,
+                                     models = models,
+                                     CV.strategy = params.CV$CV.strategy,
+                                     CV.nb.rep = params.CV$CV.nb.rep,
+                                     CV.perc = params.CV$CV.perc,
+                                     CV.k = params.CV$CV.k,
+                                     CV.balance = params.CV$CV.balance,
+                                     CV.env.var = params.CV$CV.env.var,
+                                     CV.strat = params.CV$CV.strat,
+                                     CV.user.table = params.CV$CV.user.table,
+                                     CV.do.full.models = TRUE,
+                                     OPT.strategy = params.OPT$OPT.strategy,
+                                     OPT.user.val = params.OPT$OPT.user.val,
+                                     OPT.user.base = params.OPT$OPT.user.base,
+                                     OPT.user = params.OPT$OPT.user,
+                                     weights = weights,
+                                     prevalence = prevalence,
+                                     metric.eval = metric.eval,
+                                     var.import = var.import,
+                                     scale.models = scale.models,
+                                     nb.cpu = nb.cpu,
+                                     seed.val = NULL)
   # )
   
   cat("\n\t > Ensemble Models")
@@ -353,11 +353,13 @@ BIOMOD_Wrap <- function(dir.name = ".",
   
   ## check if model is supported
   if (data.type == "binary"){
-    avail.models.list <- c('ANN', 'CTA', 'FDA', 'GAM', 'GBM', 'GLM', 'MARS', 'MAXENT', 'MAXNET', 'RF','RFd', 'SRE', 'XGBOOST')
+    avail.models.list <- c('ANN', 'CTA', 'DNN', 'FDA', 'GAM', 'GBM', 'GLM', 'MARS', 'MAXENT', 'MAXNET', 'RF','RFd', 'SRE', 'XGBOOST')
   } else if (data.type == "ordinal") {
-    avail.models.list <- c('CTA', 'FDA', 'GAM', 'GLM', 'MARS', 'RF', 'XGBOOST')
+    avail.models.list <- c('CTA', 'DNN', 'FDA', 'GAM', 'GLM', 'MARS', 'RF', 'XGBOOST')
+  } else if (data.type == "multiclass") {
+    avail.models.list <- c('CTA', 'DNN', 'FDA', 'MARS', 'RF', 'XGBOOST')
   } else {
-    avail.models.list <- c('CTA', 'GAM', 'GBM', 'GLM', 'MARS', 'RF', 'XGBOOST')
+    avail.models.list <- c('CTA', 'DNN', 'GAM', 'GBM', 'GLM', 'MARS', 'RF', 'XGBOOST')
   }
   .fun_testIfIn(TRUE, paste0("models with ", data.type, " data type"), models, avail.models.list)
   
@@ -395,9 +397,9 @@ BIOMOD_Wrap <- function(dir.name = ".",
   metric.eval <- unique(metric.eval)
   if (data.type == "binary") {
     avail.eval.meth.list <- c('TSS', 'KAPPA', 'ACCURACY', 'BIAS', 'POD', 'FAR', 'POFD'
-                              , 'SR', 'CSI', 'ETS', 'HK', 'HSS', 'OR', 'ORSS', 'ROC'
+                              , 'SR', 'CSI', 'ETS', 'HK', 'HSS', 'OR', 'ORSS', 'AUCroc', 'AUCprg'
                               , 'BOYCE', 'MPA')
-  } else if (data.type == "ordinal") {
+  } else if (data.type %in% c("ordinal", "multiclass")) {
     avail.eval.meth.list <- c("Accuracy", "Recall", "Precision", "F1")
   } else {
     avail.eval.meth.list <- c('RMSE','MSE',"MAE","Rsquared","Rsquared_aj","Max_error")
