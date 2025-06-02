@@ -1,5 +1,21 @@
+# shinyOptions ---------------------------------------------------------
+##' @name shinyOptions
+##' @author Helene Blancheteau
+##' 
+##' @title Shiny application to help set the options for the algorithms
+##' in biomod2
+##' 
+##' @description ...
+##'              
+##'  
+##'  
+##' @export
+##' 
+##' 
 
-shinyOptions = function(bm.format = NULL)
+
+
+shinyOptions = function()
 {
   if (!isNamespaceLoaded("shiny")) { 
     if (!requireNamespace('shiny', quietly = TRUE)) stop("Package 'shiny' not found")
