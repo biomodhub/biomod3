@@ -1,5 +1,5 @@
 # shinyOptions ---------------------------------------------------------
-##' @name shinyOptions
+##' @name bm_shinyOptions
 ##' @author Helene Blancheteau
 ##' 
 ##' @title Shiny application to help set the options for the algorithms
@@ -15,7 +15,7 @@
 
 
 
-shinyOptions = function()
+bm_shinyOptions = function()
 {
   if (!isNamespaceLoaded("shiny")) { 
     if (!requireNamespace('shiny', quietly = TRUE)) stop("Package 'shiny' not found")
