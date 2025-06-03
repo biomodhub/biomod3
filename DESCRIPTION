@@ -23,4 +23,8 @@ Imports:
 Suggests: 
     ggtext,
     tidyterra,
-	doParallel
+    ddpcr,
+	  doParallel,
+	  shiny,
+	  shinyWidgets,
+	  shinyjs

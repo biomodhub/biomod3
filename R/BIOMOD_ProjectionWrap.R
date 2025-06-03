@@ -105,7 +105,7 @@
 ##'                       resp.xy = myRespXY,
 ##'                       expl.var = myExpl,
 ##'                       models = c('RF', 'GLM'),
-##'                       metric.eval = c("TSS", "ROC"),
+##'                       metric.eval = c("TSS", "AUCroc"),
 ##'                       params.CV = list(CV.strategy = 'random',
 ##'                                        CV.nb.rep = 3,
 ##'                                        CV.perc = 0.7),
