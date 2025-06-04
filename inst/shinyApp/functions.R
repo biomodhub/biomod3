@@ -49,6 +49,7 @@ link_documentation <- function(algo){
   switch(algo, 
          "ANN" = "https://cran.r-project.org/web/packages/nnet/nnet.pdf",
          "CTA" = "https://cran.r-project.org/web/packages/rpart/rpart.pdf",
+         "DNN" = "https://cloud.r-project.org/web/packages/cito/cito.pdf",
          "FDA" = "https://cran.r-project.org/web/packages/mda/mda.pdf",
          "GAM" = "https://cran.r-project.org/web/packages/mgcv/mgcv.pdf",
          "GBM" = "https://cran.r-project.org/web/packages/gbm/gbm.pdf",
@@ -180,6 +181,9 @@ OptionsNames <- function(algo){
          "CTA" = c("method", "parms", "cost",
                    "control_xval", "control_minbucket", "control_minsplit", "control_cp", "control_maxdepth",
                    "model", "x", "y"),
+         "DNN" = c("plot", "hidden", "activation", "bias", "dropout", "loss", "validation", "lambda" , "alpha",
+                   "optimizer", "lr", "batchsize", "burnin", "shuffle", "epochs", 
+                   "lr_scheduler", "early_stopping"),
          "FDA" = c("theta", "eps", "method"),
          "GAM" = c("method", "optimizer", "scale", "select", "gamma",
                    "control_epsilon", "control_trace", "control_maxit"),
@@ -243,6 +247,7 @@ print_list <- function(l, n = 1){
 
 namesObjectsByType <- function(type){
   names_obj <- objects(envir = globalenv())
+  if (!length(names_obj)){return("No object available")}
   text  <- paste0(" inherits(", names_obj, ", '", type, "' )", sep = "")
   yes <- sapply(text , FUN = function(x){eval(parse(text = x), envir = globalenv())})
   names_type <- names_obj[yes]

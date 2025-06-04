@@ -101,6 +101,18 @@ than with `biomod2` with several species in the same time.
 
 <br/><br/><br/>
 
+### <i class="fa-regular fa-gem"></i> Shiny App to help
+
+- `bm_ShinyOptions` is a shiny app to help create customized `BIOMOD.models.options`.
+You can adapt your options to your `BIOMOD.formated.data` and the CV table you already have in your environment.
+
+- `helpParams` is made to help with the different `params` list used in `BIOMOD_wrap` and the others
+MS functions. 
+
+
+
+
+
 <br/><br/>
 
 <br/><br/>

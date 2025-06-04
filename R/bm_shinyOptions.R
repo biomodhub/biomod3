@@ -1,4 +1,4 @@
-# shinyOptions ---------------------------------------------------------
+# bm_shinyOptions ---------------------------------------------------------
 ##' @name bm_shinyOptions
 ##' @author Helene Blancheteau
 ##' 

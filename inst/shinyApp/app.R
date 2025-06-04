@@ -60,7 +60,7 @@ ui <- fluidPage(
   fluidRow(
   column(3,
          selectInput("datatype", label = "Select datatype",
-                     choices = c("binary", "abundance", "count", "relative", "ordinal"), selected = "binary",
+                     choices = c("binary", "abundance", "count", "relative", "multiclass", "ordinal"), selected = "binary",
                      width = "200px"),
          selectInput("base", label = "Select options base",
                      choices = c("bigboss", "default"), selected = "bigboss",
@@ -115,6 +115,7 @@ ui <- fluidPage(
   tabsetPanel(id = "inTabset",
               tabPanel("ANN", uiOutput("panelANN")),
               tabPanel("CTA", uiOutput("panelCTA")),
+              tabPanel("DNN", uiOutput("panelDNN")),
               tabPanel("FDA", uiOutput("panelFDA")),
               tabPanel("GAM", uiOutput("panelGAM")),
               tabPanel("GBM", uiOutput("panelGBM")),
@@ -133,15 +134,17 @@ ui <- fluidPage(
 server <- function(input, output, session){
   
   ### Models tabs in function of data.type and options base =====================
-  hide_several_tabs("inTabset", c("ANN","CTA", "FDA", "GAM", "GBM", "GLM", "MARS", "MAXENT", "MAXNET", "RF",
+  hide_several_tabs("inTabset", c("ANN","CTA", "DNN", "FDA", "GAM", "GBM", "GLM", "MARS", "MAXENT", "MAXNET", "RF",
                                   "RFd", "SRE", "XGBOOST"))
   models_possible <- reactive({
     if (input$datatype == "binary"){
-      models_possible <- c('ANN', 'CTA', 'FDA', 'GAM', 'GBM', 'GLM', 'MARS', 'MAXENT', 'MAXNET', 'RF', 'RFd', 'SRE', 'XGBOOST')
+      models_possible <- c('ANN', 'CTA', 'DNN', 'FDA', 'GAM', 'GBM', 'GLM', 'MARS', 'MAXENT', 'MAXNET', 'RF', 'RFd', 'SRE', 'XGBOOST')
     } else if (input$datatype == "ordinal"){
-      models_possible <- c('CTA', 'FDA', 'GAM', 'GLM', 'MARS', 'RF', 'XGBOOST')
+      models_possible <- c('CTA', 'DNN', 'FDA', 'GAM', 'GLM', 'MARS', 'RF', 'XGBOOST')
+    } else if (input$datatype == "multiclass"){
+        models_possible <- c('CTA', 'DNN', 'FDA', 'MARS', 'RF', 'XGBOOST')
     } else {
-      models_possible <- c('CTA', 'GAM', 'GBM', 'GLM', 'MARS', 'RF', 'XGBOOST')
+      models_possible <- c('CTA', 'DNN', 'GAM', 'GBM', 'GLM', 'MARS', 'RF', 'XGBOOST')
     }
     models_possible
   })
@@ -160,7 +163,7 @@ server <- function(input, output, session){
     )})
   
   observeEvent(ignoreInit = TRUE, list(input$datatype, input$models), {
-    hide_several_tabs("inTabset", setdiff(c("ANN","CTA", "FDA", "GAM", "GBM", "GLM", "MARS", "MAXENT", "MAXNET", "RF",
+    hide_several_tabs("inTabset", setdiff(c("ANN","CTA", "DNN", "FDA", "GAM", "GBM", "GLM", "MARS", "MAXENT", "MAXNET", "RF",
                                     "RFd", "SRE", "XGBOOST"), input$models))
     for (i in 1:length(input$models)){
       showTab(inputId = "inTabset", target = input$models[i])
@@ -171,6 +174,7 @@ server <- function(input, output, session){
   observeEvent(input$base, {
                output$panelANN <- renderUI({eval(parse(text = ui_tabOptions(options_base(), "ANN")))})
                output$panelCTA <- renderUI({eval(parse(text = ui_tabOptions(options_base(), "CTA")))})
+               output$panelDNN <- renderUI({eval(parse(text = ui_tabOptions(options_base(), "DNN")))})
                output$panelFDA <- renderUI({eval(parse(text = ui_tabOptions(options_base(), "FDA")))})
                output$panelGAM <- renderUI({eval(parse(text = ui_tabOptions(options_base(), "GAM")))})
                output$panelGBM <- renderUI({eval(parse(text = ui_tabOptions(options_base(), "GBM")))})
