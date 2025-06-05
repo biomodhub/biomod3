@@ -30,8 +30,7 @@ help.Params = function()
   params.OPT <- list()
   params.EM <- list()
   
-  #appDir <- system.file("shinyApp", package = "biomod3")
-  appDir = "~/biomod_stacked/inst/shinyApp_helpParams"
+  appDir <- system.file("shinyApp_helpParams", package = "biomod3")
   if (appDir == "") {
     stop("Could not find shinyApp directory. Try re-installing `biomod3`.", call. = FALSE)
   }
